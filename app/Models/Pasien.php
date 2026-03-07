@@ -13,6 +13,23 @@ class Pasien extends Model
 
     protected $fillable = ['no_rm', 'nama_pasien', 'tanggal_lahir', 'jenis_kelamin', 'alamat', 'no_hp', 'user_id'];
 
+    public static function generateNoRm(): string
+    {
+        $prefix = 'RM-' . date('Ym') . '-';
+        $lastRecord = static::where('no_rm', 'like', $prefix . '%')
+            ->orderBy('no_rm', 'desc')
+            ->first();
+
+        if (!$lastRecord) {
+            return $prefix . '0001';
+        }
+
+        $lastNumber = (int) str_replace($prefix, '', $lastRecord->no_rm);
+        $nextNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+
+        return $prefix . $nextNumber;
+    }
+
     public static function booted()
     {
         static::created(function (Pasien $pasien) {

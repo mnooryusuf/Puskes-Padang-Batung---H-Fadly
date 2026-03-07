@@ -29,7 +29,11 @@ class PendaftaranResource extends Resource
     {
         return $form->schema([
             Select::make('pasien_id')->relationship('pasien', 'nama_pasien')->searchable()->preload()->createOptionForm([
-                TextInput::make('no_rm')->required(),
+                TextInput::make('no_rm')
+                    ->label('No. RM')
+                    ->default(fn () => Pasien::generateNoRm())
+                    ->readonly()
+                    ->required(),
                 TextInput::make('nama_pasien')->required(),
                 DatePicker::make('tanggal_lahir')->required(),
                 Select::make('jenis_kelamin')->options(['L'=>'L','P'=>'P'])->required(),

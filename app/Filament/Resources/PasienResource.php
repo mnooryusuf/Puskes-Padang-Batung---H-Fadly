@@ -31,7 +31,12 @@ class PasienResource extends Resource
     {
         return $form->schema([
             Section::make('Data Pasien')->schema([
-                TextInput::make('no_rm')->label('No. RM')->required()->unique(ignoreRecord: true),
+                TextInput::make('no_rm')
+                    ->label('No. RM')
+                    ->default(fn () => Pasien::generateNoRm())
+                    ->readonly()
+                    ->required()
+                    ->unique(ignoreRecord: true),
                 TextInput::make('nama_pasien')->required(),
                 DatePicker::make('tanggal_lahir')->required(),
                 Select::make('jenis_kelamin')->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])->required(),
