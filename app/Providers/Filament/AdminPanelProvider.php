@@ -25,6 +25,7 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->brandName('Aplikasi Rawat Jalan Puskesmas')
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
