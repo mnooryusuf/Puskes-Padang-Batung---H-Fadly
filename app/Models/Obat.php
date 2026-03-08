@@ -10,7 +10,16 @@ class Obat extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_obat', 'satuan', 'stok', 'harga_jual'];
+    protected $fillable = ['nama_obat', 'satuan', 'stok', 'expired_at', 'harga_jual'];
+
+    protected $casts = [
+        'expired_at' => 'date',
+    ];
+
+    public function stockHistories(): HasMany
+    {
+        return $this->hasMany(StockHistory::class);
+    }
 
     public function detailReseps(): HasMany
     {

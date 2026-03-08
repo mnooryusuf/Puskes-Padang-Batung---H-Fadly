@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\Obat;
+use App\Filament\Resources\ObatResource\RelationManagers;
 use Filament\Forms\Form;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -28,6 +29,7 @@ class ObatResource extends Resource
             TextInput::make('nama_obat')->required(),
             TextInput::make('satuan')->required(),
             TextInput::make('stok')->numeric()->required(),
+            \Filament\Forms\Components\DatePicker::make('expired_at')->label('Tgl Kadaluwarsa'),
             TextInput::make('harga_jual')
                 ->numeric()
                 ->prefix('Rp')
@@ -41,6 +43,12 @@ class ObatResource extends Resource
             TextColumn::make('nama_obat')->searchable()->sortable(),
             TextColumn::make('satuan'),
             TextColumn::make('stok')->badge()->color(fn($state) => $state < 10 ? 'danger' : ($state < 20 ? 'warning' : 'success')),
+            TextColumn::make('expired_at')
+                ->label('Expired')
+                ->date()
+                ->badge()
+                ->color(fn ($state) => $state && $state->isPast() ? 'danger' : ($state && $state->diffInDays(now()) < 30 ? 'warning' : 'success'))
+                ->sortable(),
             TextColumn::make('harga_jual')->label('Harga')->money('idr')->sortable(),
         ])->actions([
             EditAction::make(),
@@ -48,6 +56,13 @@ class ObatResource extends Resource
         ])->groupedBulkActions([
             DeleteBulkAction::make(),
         ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\StockHistoriesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array
