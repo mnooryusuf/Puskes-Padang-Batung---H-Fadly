@@ -23,8 +23,8 @@ class ResepResource extends Resource
     protected static ?string $model = Resep::class;
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Pelayanan';
-    protected static ?string $modelLabel = 'Antrian Apotek';
-    protected static ?string $pluralModelLabel = 'Antrian Apotek';
+    protected static ?string $modelLabel = 'Data Resep';
+    protected static ?string $pluralModelLabel = 'Data Resep';
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -77,6 +77,18 @@ class ResepResource extends Resource
                 }),
             TextColumn::make('detail_reseps_count')->counts('detailReseps')->label('Jml Item'),
         ])->actions([
+            Tables\Actions\Action::make('panggil')
+                ->label('Panggil')
+                ->icon('heroicon-o-megaphone')
+                ->color('warning')
+                ->extraAttributes([
+                    'onclick' => "
+                        const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->rekamMedis->pendaftaran->no_antrian }} + ', silakan menuju ke Apotek');
+                        msg.lang = 'id-ID';
+                        msg.rate = 0.9;
+                        window.speechSynthesis.speak(msg);
+                    "
+                ]),
             Tables\Actions\Action::make('proses')
                 ->label('Proses')
                 ->icon('heroicon-o-play')

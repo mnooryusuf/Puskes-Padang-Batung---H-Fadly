@@ -80,6 +80,18 @@ class AntrianPoliResource extends Resource
                 ->default('Menunggu'),
         ])
         ->actions([
+            Tables\Actions\Action::make('panggil')
+                ->label('Panggil')
+                ->icon('heroicon-o-megaphone')
+                ->color('warning')
+                ->extraAttributes([
+                    'onclick' => "
+                        const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->no_antrian }} + ', silakan menuju ke Poli ' + '{{ \$record->poli?->nama_poli }}');
+                        msg.lang = 'id-ID';
+                        msg.rate = 0.9;
+                        window.speechSynthesis.speak(msg);
+                    "
+                ]),
             Tables\Actions\Action::make('periksa')
                 ->label('Periksa')
                 ->icon('heroicon-o-clipboard-document-check')

@@ -55,6 +55,18 @@ class AntrianKasirResource extends Resource
                     ->time(),
             ])
             ->actions([
+                Action::make('panggil')
+                    ->label('Panggil')
+                    ->icon('heroicon-o-megaphone')
+                    ->color('warning')
+                    ->extraAttributes([
+                        'onclick' => "
+                            const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->nomor_antrian }} + ', silakan menuju ke Kasir');
+                            msg.lang = 'id-ID';
+                            msg.rate = 0.9;
+                            window.speechSynthesis.speak(msg);
+                        "
+                    ]),
                 Action::make('proses_bayar')
                     ->label('Proses Bayar')
                     ->icon('heroicon-o-currency-dollar')
