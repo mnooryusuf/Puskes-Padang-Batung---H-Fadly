@@ -41,8 +41,28 @@ class PendaftaranResource extends Resource
                 TextInput::make('alamat')->required(),
             ])->required(),
             DatePicker::make('tanggal_daftar')->default(now())->required(),
-            Select::make('poli')->options(['Poli Umum' => 'Poli Umum', 'Poli Gigi' => 'Poli Gigi', 'Poli KIA' => 'Poli KIA'])->required(),
-            TextInput::make('no_antrian')->numeric()->required()->default(fn() => Pendaftaran::where('tanggal_daftar', now()->toDateString())->count() + 1),
+            Select::make('poli_id')
+                ->relationship('poli', 'nama_poli')
+                ->required()
+                ->searchable()
+                ->preload()
+                ->live()
+                ->afterStateUpdated(fn ($state, callable $set) => $set('no_antrian', $state ? Pendaftaran::generateNoAntrian($state) : null))
+                ->label('Poli'),
+            Select::make('jenis_pembayaran')
+                ->options([
+                    'Umum' => 'Umum',
+                    'BPJS' => 'BPJS',
+                    'Lainnya' => 'Lainnya',
+                ])
+                ->default('Umum')
+                ->required()
+                ->label('Jenis Pembayaran'),
+            TextInput::make('no_antrian')
+                ->numeric()
+                ->required()
+                ->readonly()
+                ->label('No. Antrian'),
         ]);
     }
 
@@ -52,7 +72,12 @@ class PendaftaranResource extends Resource
             TextColumn::make('no_antrian')->sortable(),
             TextColumn::make('tanggal_daftar')->date()->sortable(),
             TextColumn::make('pasien.nama_pasien')->searchable()->sortable(),
-            TextColumn::make('poli')->sortable(),
+            TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
+            TextColumn::make('jenis_pembayaran')->badge()->color(fn (string $state): string => match ($state) {
+                'BPJS' => 'success',
+                'Umum' => 'info',
+                default => 'gray',
+            }),
         ])->actions([
             EditAction::make(),
             DeleteAction::make(),

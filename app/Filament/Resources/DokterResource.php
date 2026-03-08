@@ -4,7 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Models\Dokter;
 use Filament\Forms\Form;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Placeholder;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -25,8 +28,21 @@ class DokterResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('nama_dokter')->required(),
-            TextInput::make('spesialis')->required(),
+            Section::make('Data Dokter')->schema([
+                TextInput::make('nama_dokter')->required(),
+                TextInput::make('spesialis')->required(),
+                Select::make('poli_id')
+                    ->relationship('poli', 'nama_poli')
+                    ->required()
+                    ->searchable()
+                    ->preload()
+                    ->label('Poli'),
+            ])->columns(2),
+            Section::make('Akun Sistem')->schema([
+                Placeholder::make('info_akun')
+                    ->label('Informasi Akun')
+                    ->content('Akun login dokter akan dibuat otomatis menggunakan nama dokter (tanpa spasi, huruf kecil) sebagai username dan password default "Dokter123".'),
+            ])->visible(fn($operation) => $operation === 'create'),
         ]);
     }
 
@@ -34,7 +50,13 @@ class DokterResource extends Resource
     {
         return $table->columns([
             TextColumn::make('nama_dokter')->searchable()->sortable(),
+            TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
             TextColumn::make('spesialis')->badge(),
+            TextColumn::make('user.username')
+                ->label('Username Akun')
+                ->badge()
+                ->color('success')
+                ->placeholder('Belum Dibuat'),
             TextColumn::make('rekam_medis_count')->counts('rekamMedis')->label('Pasien Diperiksa'),
         ])->actions([
             EditAction::make(),
@@ -42,6 +64,13 @@ class DokterResource extends Resource
         ])->groupedBulkActions([
             DeleteBulkAction::make(),
         ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            DokterResource\RelationManagers\JadwalDoktersRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

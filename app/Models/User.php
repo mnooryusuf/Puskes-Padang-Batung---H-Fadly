@@ -78,4 +78,11 @@ class User extends Authenticatable implements FilamentUser, HasName
     {
         return $this->hasOne(Pasien::class);
     }
+    /**
+     * Get the doctor record associated with the user.
+     */
+    public function dokter(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Dokter::class);
+    }
 }
