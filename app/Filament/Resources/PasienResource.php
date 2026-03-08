@@ -37,6 +37,12 @@ class PasienResource extends Resource
                     ->readonly()
                     ->required()
                     ->unique(ignoreRecord: true),
+                TextInput::make('nik')
+                    ->label('NIK')
+                    ->required()
+                    ->length(16)
+                    ->numeric()
+                    ->unique(ignoreRecord: true),
                 TextInput::make('nama_pasien')->required(),
                 DatePicker::make('tanggal_lahir')->required(),
                 Select::make('jenis_kelamin')->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])->required(),
@@ -55,6 +61,7 @@ class PasienResource extends Resource
     {
         return $table->columns([
             TextColumn::make('no_rm')->label('No. RM')->searchable()->sortable(),
+            TextColumn::make('nik')->label('NIK')->searchable()->sortable(),
             TextColumn::make('nama_pasien')->searchable()->sortable(),
             TextColumn::make('tanggal_lahir')->date(),
             TextColumn::make('jenis_kelamin')->label('JK'),

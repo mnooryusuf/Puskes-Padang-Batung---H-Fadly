@@ -11,7 +11,7 @@ class Pasien extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['no_rm', 'nama_pasien', 'tanggal_lahir', 'jenis_kelamin', 'alamat', 'no_hp', 'user_id'];
+    protected $fillable = ['no_rm', 'nik', 'nama_pasien', 'tanggal_lahir', 'jenis_kelamin', 'alamat', 'no_hp', 'user_id'];
 
     public static function generateNoRm(): string
     {
