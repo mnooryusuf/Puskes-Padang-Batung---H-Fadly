@@ -11,7 +11,32 @@ class RekamMedis extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pendaftaran_id', 'dokter_id', 'keluhan', 'diagnosa', 'tindakan'];
+    protected $fillable = [
+        'pendaftaran_id', 
+        'dokter_id', 
+        'berat_badan', 
+        'tekanan_darah', 
+        'suhu_tubuh', 
+        'nadi', 
+        'respirasi', 
+        'keluhan_utama', 
+        'riwayat_penyakit_sekarang', 
+        'riwayat_alergi', 
+        'penyakit_id', 
+        'tipe_diagnosis', 
+        'keluhan', 
+        'diagnosa', 
+        'tindakan', 
+        'instruksi_lab', 
+        'status_pulang', 
+        'rs_tujuan', 
+        'alasan_rujuk'
+    ];
+
+    public function penyakit(): BelongsTo
+    {
+        return $this->belongsTo(Penyakit::class);
+    }
 
     public function pendaftaran(): BelongsTo
     {
