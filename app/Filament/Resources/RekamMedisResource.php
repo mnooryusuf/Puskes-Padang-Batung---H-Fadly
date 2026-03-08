@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Models\RekamMedis;
+use App\Models\Pendaftaran;
 use Filament\Forms\Form;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -18,6 +19,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Filament\Resources\RekamMedisResource\Pages;
+use App\Filament\Resources\RekamMedisResource\RelationManagers\HistoryRekamMedisRelationManager;
 
 class RekamMedisResource extends Resource
 {
@@ -36,13 +38,75 @@ class RekamMedisResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn($record) => "Antrian #{$record->no_antrian} - [{$record->pasien->no_rm}] {$record->pasien->nama_pasien}")
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->live(),
                 Select::make('dokter_id')
                     ->relationship('dokter', 'nama_dokter')
                     ->searchable()
                     ->preload()
                     ->required(),
             ])->columns(2),
+
+            Section::make('Riwayat Medis Pasien (Sebelumnya)')
+                ->description('Melihat riwayat diagnosis dan terapi pasien pada kunjungan-kunjungan lalu.')
+                ->collapsible()
+                ->schema([
+                    \Filament\Forms\Components\Placeholder::make('history_placeholder')
+                        ->label('')
+                        ->content(function ($get) {
+                            $pendaftaranId = $get('pendaftaran_id');
+                            if (!$pendaftaranId) return 'Silakan pilih pasien terlebih dahulu.';
+
+                            $pendaftaran = Pendaftaran::find($pendaftaranId);
+                            if (!$pendaftaran) return 'Data pendaftaran tidak ditemukan.';
+
+                            $pasienId = $pendaftaran->pasien_id;
+                            $history = RekamMedis::whereHas('pendaftaran', fn ($q) => $q->where('pasien_id', $pasienId))
+                                ->orderBy('created_at', 'desc')
+                                ->get();
+
+                            if ($history->isEmpty()) return 'Pasien ini belum memiliki riwayat rekam medis.';
+
+                            $html = '<table class="w-full text-sm text-left border-collapse border border-gray-200 dark:border-gray-700">
+                                <thead>
+                                    <tr class="bg-gray-50 dark:bg-gray-800">
+                                        <th class="p-2 border border-gray-200 dark:border-gray-700">Tanggal</th>
+                                        <th class="p-2 border border-gray-200 dark:border-gray-700">Diagnosis (ICD-10)</th>
+                                        <th class="p-2 border border-gray-200 dark:border-gray-700">Tindakan/Resep</th>
+                                        <th class="p-2 border border-gray-200 dark:border-gray-700">Kondisi</th>
+                                        <th class="p-2 border border-gray-200 dark:border-gray-700">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>';
+
+                            foreach ($history as $item) {
+                                $date = $item->created_at->format('d/m/Y H:i');
+                                $diagnosis = "({$item->penyakit?->kode}) {$item->penyakit?->nama_penyakit}";
+                                $tindakan = $item->tindakan;
+                                $status = $item->status_pulang;
+                                $url = \App\Filament\Resources\RekamMedisResource::getUrl('view', ['record' => $item]);
+
+                                    $html .= '<tr class="border border-gray-200 dark:border-gray-700">
+                                    <td class="p-2">' . $date . '</td>
+                                    <td class="p-2">' . $diagnosis . '</td>
+                                    <td class="p-2">' . $tindakan . '</td>
+                                    <td class="p-2">' . $status . '</td>
+                                    <td class="p-2">
+                                        <button type="button" 
+                                            x-on:click="$wire.mountAction(\'viewHistory\', { recordId: ' . $item->id . ' })"
+                                            class="inline-flex items-center px-3 py-1 text-xs font-medium text-white bg-primary-600 rounded-md hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-600">
+                                            Detail
+                                        </button>
+                                    </td>
+                                </tr>';
+                            }
+
+                            $html .= '</tbody></table>';
+
+                            return new \Illuminate\Support\HtmlString($html);
+                        }),
+                ]),
+
 
             Section::make('2. Anamnesa (Keluhan & Riwayat)')->schema([
                 Textarea::make('keluhan_utama')
@@ -173,6 +237,13 @@ class RekamMedisResource extends Resource
         ]);
     }
 
+    public static function getRelationManagers(): array
+    {
+        return [
+            HistoryRekamMedisRelationManager::class,
+        ];
+    }
+
     public static function table(Table $table): Table
     {
         return $table->columns([
@@ -201,9 +272,11 @@ class RekamMedisResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListRekamMedis::route('/'),
-            'create' => Pages\CreateRekamMedis::route('/create'),
-            'edit' => Pages\EditRekamMedis::route('/{record}/edit'),
+            'index'     => Pages\ListRekamMedisPasiens::route('/'),
+            'by-pasien' => Pages\ListRekamMedisByPasien::route('/pasien/{pasienId}'),
+            'create'    => Pages\CreateRekamMedis::route('/create'),
+            'view'      => Pages\ViewRekamMedis::route('/{record}'),
+            'edit'      => Pages\EditRekamMedis::route('/{record}/edit'),
         ];
     }
 }

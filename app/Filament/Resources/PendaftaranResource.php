@@ -63,6 +63,14 @@ class PendaftaranResource extends Resource
                 ->required()
                 ->readonly()
                 ->label('No. Antrian'),
+            Select::make('status')
+                ->options([
+                    'Menunggu' => 'Menunggu',
+                    'Diperiksa' => 'Diperiksa',
+                    'Selesai' => 'Selesai',
+                ])
+                ->default('Menunggu')
+                ->required(),
         ]);
     }
 
@@ -78,6 +86,15 @@ class PendaftaranResource extends Resource
                 'Umum' => 'info',
                 default => 'gray',
             }),
+            TextColumn::make('status')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'Menunggu' => 'warning',
+                    'Diperiksa' => 'info',
+                    'Selesai' => 'success',
+                    default => 'gray',
+                })
+                ->sortable(),
         ])->actions([
             EditAction::make(),
             DeleteAction::make(),

@@ -52,4 +52,9 @@ class RekamMedis extends Model
     {
         return $this->hasOne(Resep::class);
     }
+
+    public function pasien(): BelongsTo
+    {
+        return $this->pendaftaran->pasien();
+    }
 }

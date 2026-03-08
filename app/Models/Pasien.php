@@ -55,4 +55,9 @@ class Pasien extends Model
     {
         return $this->hasMany(Pendaftaran::class);
     }
+
+    public function rekamMedis(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(RekamMedis::class, Pendaftaran::class);
+    }
 }
