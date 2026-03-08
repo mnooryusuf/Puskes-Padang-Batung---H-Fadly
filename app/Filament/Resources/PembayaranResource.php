@@ -46,7 +46,6 @@ class PembayaranResource extends Resource
 
                             $set('biaya_pendaftaran', $biayaReg);
                             $set('biaya_konsultasi', $biayaKon);
-
                             // 2. Hitung Biaya Obat
                             $biayaObat = 0;
                             if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->resep) {
@@ -55,6 +54,10 @@ class PembayaranResource extends Resource
                                 }
                             }
                             $set('biaya_obat', $biayaObat);
+                            $set('biaya_tindakan', 0);
+                            $set('biaya_penunjang', 0);
+                            $set('biaya_bhp', 0);
+                            $set('biaya_tambahan', 0);
 
                             // 3. Update Total
                             $total = $biayaReg + $biayaKon + $biayaObat;
@@ -62,6 +65,14 @@ class PembayaranResource extends Resource
                         })
                         ->label('Pasien / Antrian'),
                     
+                    Forms\Components\TextInput::make('nomor_kartu_bpjs')
+                        ->label('Nomor Kartu BPJS')
+                        ->placeholder('Contoh: 0001234567890')
+                        ->visible(fn (Forms\Get $get): bool => 
+                            \App\Models\Pendaftaran::find($get('pendaftaran_id'))?->jenis_pembayaran === 'BPJS'
+                        )
+                        ->maxLength(20),
+
                     Forms\Components\TextInput::make('biaya_pendaftaran')
                         ->numeric()
                         ->prefix('Rp')
@@ -86,6 +97,22 @@ class PembayaranResource extends Resource
                         ->default(0)
                         ->live()
                         ->afterStateUpdated(fn (Forms\Get $get, Forms\Set $set) => self::updateTotal($get, $set)),
+
+                    Forms\Components\TextInput::make('biaya_penunjang')
+                        ->label('Biaya Penunjang (Lab/EKG)')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default(0)
+                        ->live()
+                        ->afterStateUpdated(fn (Forms\Get $get, Forms\Set $set) => self::updateTotal($get, $set)),
+
+                    Forms\Components\TextInput::make('biaya_bhp')
+                        ->label('Biaya BHP (Kassa/Spuit/dll)')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default(0)
+                        ->live()
+                        ->afterStateUpdated(fn (Forms\Get $get, Forms\Set $set) => self::updateTotal($get, $set)),
                     
                     Forms\Components\TextInput::make('biaya_tambahan')
                         ->numeric()
@@ -105,13 +132,17 @@ class PembayaranResource extends Resource
                         ->options([
                             'Belum Lunas' => 'Belum Lunas',
                             'Lunas' => 'Lunas',
+                            'Piutang' => 'Piutang (Klaim)',
+                            'Gratis' => 'Gratis (Kebijakan Pemda)',
                         ])
+                        ->default('Belum Lunas')
                         ->required(),
                     Forms\Components\Select::make('metode_pembayaran')
                         ->options([
                             'Tunai' => 'Tunai',
                             'BPJS' => 'BPJS',
-                            'Transfer' => 'Transfer',
+                            'QRIS' => 'QRIS / Non-Tunai',
+                            'Transfer' => 'Transfer Bank',
                         ])
                         ->default('Tunai'),
                 ])->columns(2)
@@ -124,6 +155,8 @@ class PembayaranResource extends Resource
                  (float)$get('biaya_konsultasi') + 
                  (float)$get('biaya_obat') + 
                  (float)$get('biaya_tindakan') + 
+                 (float)$get('biaya_penunjang') + 
+                 (float)$get('biaya_bhp') + 
                  (float)$get('biaya_tambahan');
         
         $set('total_bayar', $total);
@@ -137,6 +170,11 @@ class PembayaranResource extends Resource
                     ->label('Tanggal')
                     ->dateTime()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('pendaftaran.pasien.no_rm')
+                    ->label('No. RM')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('pendaftaran.pasien.nama_pasien')
                     ->label('Pasien')
                     ->searchable()
@@ -154,6 +192,8 @@ class PembayaranResource extends Resource
                     ->color(fn (string $state): string => match ($state) {
                         'Lunas' => 'success',
                         'Belum Lunas' => 'danger',
+                        'Piutang' => 'warning',
+                        'Gratis' => 'info',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('metode_pembayaran')

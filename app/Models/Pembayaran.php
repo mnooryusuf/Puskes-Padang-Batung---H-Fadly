@@ -17,16 +17,23 @@ class Pembayaran extends Model
         'biaya_konsultasi',
         'biaya_obat',
         'biaya_tindakan',
+        'biaya_penunjang',
+        'biaya_bhp',
         'biaya_tambahan',
         'total_bayar',
         'status_pembayaran',
         'metode_pembayaran',
+        'nomor_kartu_bpjs',
     ];
 
     public static function booted()
     {
         static::updated(function (Pembayaran $pembayaran) {
-            if ($pembayaran->status_pembayaran === 'Lunas' && $pembayaran->getOriginal('status_pembayaran') !== 'Lunas') {
+            $finalStatuses = ['Lunas', 'Piutang', 'Gratis'];
+            $newStatus = $pembayaran->status_pembayaran;
+            $oldStatus = $pembayaran->getOriginal('status_pembayaran');
+
+            if (in_array($newStatus, $finalStatuses) && !in_array($oldStatus, $finalStatuses)) {
                 Antrian::where('pendaftaran_id', $pembayaran->pendaftaran_id)
                     ->where('kategori', 'Kasir')
                     ->update(['status' => 'Selesai']);
@@ -36,7 +43,8 @@ class Pembayaran extends Model
         });
 
         static::created(function (Pembayaran $pembayaran) {
-            if ($pembayaran->status_pembayaran === 'Lunas') {
+            $finalStatuses = ['Lunas', 'Piutang', 'Gratis'];
+            if (in_array($pembayaran->status_pembayaran, $finalStatuses)) {
                 Antrian::where('pendaftaran_id', $pembayaran->pendaftaran_id)
                     ->where('kategori', 'Kasir')
                     ->update(['status' => 'Selesai']);
