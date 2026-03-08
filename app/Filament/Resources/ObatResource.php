@@ -28,6 +28,10 @@ class ObatResource extends Resource
             TextInput::make('nama_obat')->required(),
             TextInput::make('satuan')->required(),
             TextInput::make('stok')->numeric()->required(),
+            TextInput::make('harga_jual')
+                ->numeric()
+                ->prefix('Rp')
+                ->required(),
         ]);
     }
 
@@ -37,6 +41,7 @@ class ObatResource extends Resource
             TextColumn::make('nama_obat')->searchable()->sortable(),
             TextColumn::make('satuan'),
             TextColumn::make('stok')->badge()->color(fn($state) => $state < 10 ? 'danger' : ($state < 20 ? 'warning' : 'success')),
+            TextColumn::make('harga_jual')->label('Harga')->money('idr')->sortable(),
         ])->actions([
             EditAction::make(),
             DeleteAction::make(),

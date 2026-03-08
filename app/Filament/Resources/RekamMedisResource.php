@@ -17,6 +17,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use App\Filament\Resources\RekamMedisResource\Pages;
 
 class RekamMedisResource extends Resource
 {
@@ -87,35 +88,9 @@ class RekamMedisResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => RekamMedisResource\Pages\ListRekamMedis::route('/'),
-            'create' => RekamMedisResource\Pages\CreateRekamMedis::route('/create'),
-            'edit' => RekamMedisResource\Pages\EditRekamMedis::route('/{record}/edit'),
-        ];
-    }
-}
-
-    public static function table(Table $table): Table
-    {
-        return $table->columns([
-            TextColumn::make('created_at')->label('Tanggal')->dateTime()->sortable(),
-            TextColumn::make('pendaftaran.pasien.nama_pasien')->label('Pasien')->searchable(),
-            TextColumn::make('dokter.nama_dokter')->label('Dokter'),
-            TextColumn::make('diagnosa')->limit(50),
-        ])->actions([
-            ViewAction::make(),
-            EditAction::make(),
-            DeleteAction::make(),
-        ])->groupedBulkActions([
-            DeleteBulkAction::make(),
-        ]);
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => RekamMedisResource\Pages\ListRekamMedis::route('/'),
-            'create' => RekamMedisResource\Pages\CreateRekamMedis::route('/create'),
-            'edit' => RekamMedisResource\Pages\EditRekamMedis::route('/{record}/edit'),
+            'index' => Pages\ListRekamMedis::route('/'),
+            'create' => Pages\CreateRekamMedis::route('/create'),
+            'edit' => Pages\EditRekamMedis::route('/{record}/edit'),
         ];
     }
 }

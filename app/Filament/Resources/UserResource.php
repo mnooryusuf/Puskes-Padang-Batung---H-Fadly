@@ -29,7 +29,7 @@ class UserResource extends Resource
         return $form->schema([
             TextInput::make('username')->required()->unique(ignoreRecord: true),
             TextInput::make('password')->password()->required(fn($operation) => $operation === 'create')->dehydrated(fn($state) => filled($state)),
-            Select::make('role')->options(['admin' => 'Admin', 'petugas' => 'Petugas', 'dokter' => 'Dokter', 'apoteker' => 'Apoteker', 'kepala' => 'Kepala', 'pasien' => 'Pasien'])->required(),
+            Select::make('role')->options(['admin' => 'Admin', 'petugas' => 'Petugas', 'dokter' => 'Dokter', 'apoteker' => 'Apoteker', 'kasir' => 'Kasir', 'kepala' => 'Kepala', 'pasien' => 'Pasien'])->required(),
         ]);
     }
 
@@ -37,7 +37,7 @@ class UserResource extends Resource
     {
         return $table->columns([
             TextColumn::make('username')->searchable()->sortable(),
-            TextColumn::make('role')->badge()->color(fn($state) => match($state) {'admin'=>'danger','dokter'=>'success','petugas'=>'info','apoteker'=>'warning','kepala'=>'primary',default=>'gray'}),
+            TextColumn::make('role')->badge()->color(fn($state) => match($state) {'admin'=>'danger','dokter'=>'success','petugas'=>'info','apoteker'=>'warning','kasir'=>'success','kepala'=>'primary',default=>'gray'}),
         ])->actions([
             EditAction::make(),
             DeleteAction::make(),

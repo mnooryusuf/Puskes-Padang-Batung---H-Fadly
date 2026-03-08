@@ -21,6 +21,7 @@ use UnitEnum;
 class ResepResource extends Resource
 {
     protected static ?string $model = Resep::class;
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Resep';

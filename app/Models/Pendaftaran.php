@@ -51,4 +51,9 @@ class Pendaftaran extends Model
     {
         return $this->hasOne(RekamMedis::class);
     }
+
+    public function pembayaran(): HasOne
+    {
+        return $this->hasOne(Pembayaran::class);
+    }
 }

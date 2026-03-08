@@ -10,7 +10,7 @@ class Obat extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama_obat', 'satuan', 'stok'];
+    protected $fillable = ['nama_obat', 'satuan', 'stok', 'harga_jual'];
 
     public function detailReseps(): HasMany
     {

@@ -32,7 +32,17 @@ class PoliResource extends Resource
                         ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
-                ])
+                    Forms\Components\TextInput::make('biaya_registrasi')
+                        ->label('Biaya Pendaftaran')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default(0),
+                    Forms\Components\TextInput::make('biaya_konsultasi')
+                        ->label('Biaya Konsultasi Dokter')
+                        ->numeric()
+                        ->prefix('Rp')
+                        ->default(0),
+                ])->columns(3)
             ]);
     }
 
@@ -44,9 +54,15 @@ class PoliResource extends Resource
                     ->label('Nama Poli')
                     ->searchable()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('biaya_registrasi')
+                    ->label('Reg')
+                    ->money('idr'),
+                Tables\Columns\TextColumn::make('biaya_konsultasi')
+                    ->label('Konsul')
+                    ->money('idr'),
                 Tables\Columns\TextColumn::make('dokters_count')
                     ->counts('dokters')
-                    ->label('Jumlah Dokter')
+                    ->label('Dokter')
                     ->badge()
                     ->color('info'),
                 Tables\Columns\TextColumn::make('created_at')
