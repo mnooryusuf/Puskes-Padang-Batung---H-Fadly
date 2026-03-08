@@ -1,0 +1,26 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Pasien;
+use App\Models\Pembayaran;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+
+class PrintController extends Controller
+{
+    public function cetakKartuPasien(Pasien $pasien)
+    {
+        $pdf = Pdf::loadView('pdf.kartu-pasien', compact('pasien'))
+            ->setPaper([0, 0, 400, 250], 'portrait');
+            
+        return $pdf->stream("Kartu-Pasien-{$pasien->no_rm}.pdf");
+    }
+
+    public function cetakKwitansi(Pembayaran $pembayaran)
+    {
+        $pdf = Pdf::loadView('pdf.kwitansi', compact('pembayaran'));
+        
+        return $pdf->stream("Kwitansi-{$pembayaran->id}.pdf");
+    }
+}

@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Filament\Widgets;
+
+use App\Models\Pendaftaran;
+use Filament\Widgets\ChartWidget;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
+
+class KunjunganPasienChart extends ChartWidget
+{
+    protected static ?string $heading = 'Tren Kunjungan Pasien (7 Hari Terakhir)';
+    protected static ?int $sort = 2;
+
+    protected function getData(): array
+    {
+        // Simple manual trend calculation since trend package might not be installed
+        $data = [];
+        $labels = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $labels[] = $date->format('d M');
+            $data[] = Pendaftaran::whereDate('created_at', $date->toDateString())->count();
+        }
+
+        return [
+            'datasets' => [
+                [
+                    'label' => 'Jumlah Pasien',
+                    'data' => $data,
+                    'fill' => 'start',
+                    'borderColor' => '#00796B',
+                    'backgroundColor' => 'rgba(0, 121, 107, 0.1)',
+                ],
+            ],
+            'labels' => $labels,
+        ];
+    }
+
+    protected function getType(): string
+    {
+        return 'line';
+    }
+}

@@ -160,9 +160,32 @@ class PembayaranResource extends Resource
                     ->label('Metode'),
             ])
             ->filters([
-                //
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('dari'),
+                        Forms\Components\DatePicker::make('sampai'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['dari'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['sampai'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->label('Periode Tanggal'),
             ])
             ->actions([
+                Tables\Actions\Action::make('cetak_kwitansi')
+                    ->label('Cetak')
+                    ->icon('heroicon-o-printer')
+                    ->color('success')
+                    ->url(fn (Pembayaran $record): string => route('pembayaran.cetak-kwitansi', $record))
+                    ->openUrlInNewTab()
+                    ->visible(fn (Pembayaran $record) => $record->status_pembayaran === 'Lunas'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

@@ -12,6 +12,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Placeholder;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -73,6 +74,12 @@ class PasienResource extends Resource
                 ->color('success')
                 ->placeholder('Belum Dibuat'),
         ])->actions([
+            Tables\Actions\Action::make('cetak_kartu')
+                ->label('Cetak Kartu')
+                ->icon('heroicon-o-printer')
+                ->color('success')
+                ->url(fn (Pasien $record): string => route('pasien.cetak-kartu', $record))
+                ->openUrlInNewTab(),
             EditAction::make(),
             DeleteAction::make(),
         ])->groupedBulkActions([
