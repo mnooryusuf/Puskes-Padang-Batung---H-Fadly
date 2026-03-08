@@ -30,12 +30,30 @@ class ResepResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Select::make('rekam_medis_id')->relationship('rekamMedis', 'id')->getOptionLabelFromRecordUsing(fn($record) => "RM #{$record->id} - {$record->pendaftaran->pasien->nama_pasien}")->required(),
+            Select::make('rekam_medis_id')->relationship('rekamMedis', 'id')->getOptionLabelFromRecordUsing(fn($record) => "{$record->pendaftaran->pasien->no_rm} - {$record->pendaftaran->pasien->nama_pasien}")->searchable()->preload()->required(),
             Repeater::make('detailReseps')->relationship()->schema([
-                Select::make('obat_id')->relationship('obat', 'nama_obat')->required(),
+                Select::make('obat_id')
+                    ->relationship('obat', 'nama_obat')
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $obat = \App\Models\Obat::find($state);
+                        $set('satuan_view', $obat?->satuan);
+                    }),
+                TextInput::make('satuan_view')
+                    ->label('Satuan')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->afterStateHydrated(function ($set, $get) {
+                        $obatId = $get('obat_id');
+                        if ($obatId) {
+                            $obat = \App\Models\Obat::find($obatId);
+                            $set('satuan_view', $obat?->satuan);
+                        }
+                    }),
                 TextInput::make('dosis')->required(),
                 TextInput::make('jumlah')->numeric()->required(),
-            ])->columns(3)->required(),
+            ])->columns(4)->required(),
         ]);
     }
 

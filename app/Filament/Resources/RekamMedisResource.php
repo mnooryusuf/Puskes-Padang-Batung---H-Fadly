@@ -73,6 +73,7 @@ class RekamMedisResource extends Resource
     {
         return $table->columns([
             TextColumn::make('created_at')->label('Tanggal')->dateTime()->sortable(),
+            TextColumn::make('pendaftaran.pasien.no_rm')->label('No. RM')->searchable()->sortable(),
             TextColumn::make('pendaftaran.pasien.nama_pasien')->label('Pasien')->searchable(),
             TextColumn::make('dokter.nama_dokter')->label('Dokter'),
             TextColumn::make('diagnosa')->limit(50),
