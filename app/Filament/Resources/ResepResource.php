@@ -61,6 +61,10 @@ class ResepResource extends Resource
     {
         return $table->columns([
             TextColumn::make('created_at')->label('Tanggal')->dateTime()->sortable(),
+            TextColumn::make('rekamMedis.pendaftaran.pasien.no_rm')
+                ->label('No. RM')
+                ->searchable()
+                ->sortable(),
             TextColumn::make('rekamMedis.pendaftaran.pasien.nama_pasien')->label('Pasien')->searchable(),
             TextColumn::make('status_pengambilan')
                 ->badge()

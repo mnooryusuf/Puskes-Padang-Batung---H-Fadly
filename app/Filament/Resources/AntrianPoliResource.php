@@ -41,7 +41,10 @@ class AntrianPoliResource extends Resource
             // Form is primarily read-only for doctor's queue view
             TextInput::make('no_antrian')->disabled(),
             TextInput::make('tanggal_daftar')->disabled(),
-            Select::make('pasien_id')->relationship('pasien', 'nama_pasien')->disabled(),
+            Select::make('pasien_id')
+                ->relationship('pasien', 'nama_pasien')
+                ->getOptionLabelFromRecordUsing(fn ($record) => "[{$record->no_rm}] {$record->nama_pasien}")
+                ->disabled(),
             Select::make('poli_id')->relationship('poli', 'nama_poli')->disabled(),
             TextInput::make('status')->disabled(),
         ]);

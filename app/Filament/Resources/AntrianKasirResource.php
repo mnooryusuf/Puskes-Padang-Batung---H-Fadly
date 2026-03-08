@@ -38,6 +38,10 @@ class AntrianKasirResource extends Resource
                     ->label('No. Antrian')
                     ->badge()
                     ->color('success'),
+                TextColumn::make('pendaftaran.pasien.no_rm')
+                    ->label('No. RM')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('pendaftaran.pasien.nama_pasien')
                     ->label('Nama Pasien')
                     ->searchable(),

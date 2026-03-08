@@ -28,7 +28,9 @@ class PendaftaranResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Select::make('pasien_id')->relationship('pasien', 'nama_pasien')->searchable()->preload()->createOptionForm([
+            Select::make('pasien_id')->relationship('pasien', 'nama_pasien')
+                ->getOptionLabelFromRecordUsing(fn ($record) => "[{$record->no_rm}] {$record->nama_pasien}")
+                ->searchable()->preload()->createOptionForm([
                 TextInput::make('no_rm')
                     ->label('No. RM')
                     ->default(fn () => Pasien::generateNoRm())
@@ -79,7 +81,8 @@ class PendaftaranResource extends Resource
         return $table->columns([
             TextColumn::make('no_antrian')->sortable(),
             TextColumn::make('tanggal_daftar')->date()->sortable(),
-            TextColumn::make('pasien.nama_pasien')->searchable()->sortable(),
+            TextColumn::make('pasien.no_rm')->label('No. RM')->searchable()->sortable(),
+            TextColumn::make('pasien.nama_pasien')->label('Nama Pasien')->searchable()->sortable(),
             TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
             TextColumn::make('jenis_pembayaran')->badge()->color(fn (string $state): string => match ($state) {
                 'BPJS' => 'success',
