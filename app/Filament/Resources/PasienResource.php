@@ -39,6 +39,7 @@ class PasienResource extends Resource
                     ->unique(ignoreRecord: true),
                 TextInput::make('nik')
                     ->label('NIK')
+                    ->validationAttribute('NIK')
                     ->required()
                     ->length(16)
                     ->numeric()
