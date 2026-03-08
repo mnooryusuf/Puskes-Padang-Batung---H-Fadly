@@ -25,6 +25,16 @@ class AntrianPoliResource extends Resource
     protected static ?string $modelLabel = 'Antrian Poli';
     protected static ?string $pluralModelLabel = 'Antrian Poli';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'Menunggu Poli')->count() ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Form $form): Form
     {
         return $form->schema([

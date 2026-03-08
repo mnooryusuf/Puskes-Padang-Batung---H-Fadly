@@ -57,13 +57,38 @@ class CreateRekamMedis extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Ensure status becomes 'Selesai' when saved
-        $pendaftaran = Pendaftaran::find($data['pendaftaran_id']);
-        if ($pendaftaran) {
-            $pendaftaran->update(['status' => 'Selesai']);
-        }
-
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        $record = $this->record;
+        $pendaftaran = $record->pendaftaran;
+
+        if ($pendaftaran) {
+            // Check if there is a prescription (saved via repeater)
+            // In afterCreate, relationship should be already processed by saveRelationships()
+            $hasResep = $record->resep()->exists();
+            
+            if ($hasResep) {
+                $pendaftaran->update(['status' => 'Menunggu Obat']);
+                // Antrian Obat is already created by Resep model's booted event
+            } else {
+                $pendaftaran->update(['status' => 'Menunggu Pembayaran']);
+                
+                // Create Antrian Kasir record since no Resep will trigger it
+                \App\Models\Antrian::firstOrCreate(
+                    [
+                        'pendaftaran_id' => $pendaftaran->id,
+                        'kategori' => 'Kasir',
+                    ],
+                    [
+                        'nomor_antrian' => \App\Models\Antrian::generateNomor('Kasir'),
+                        'status' => 'Menunggu',
+                    ]
+                );
+            }
+        }
     }
 
     public function mount(): void
@@ -80,8 +105,8 @@ class CreateRekamMedis extends CreateRecord
                     'dokter_id' => $pendaftaran->poli?->dokter?->id, // Attempt to auto-fill doctor from poli
                 ]);
 
-                // Update status to 'Diperiksa' when doctor opens the form
-                $pendaftaran->update(['status' => 'Diperiksa']);
+                // Update status to 'Pemeriksaan' when doctor opens the form
+                $pendaftaran->update(['status' => 'Pemeriksaan']);
             }
         }
     }

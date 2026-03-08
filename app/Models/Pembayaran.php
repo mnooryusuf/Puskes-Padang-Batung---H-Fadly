@@ -30,6 +30,8 @@ class Pembayaran extends Model
                 Antrian::where('pendaftaran_id', $pembayaran->pendaftaran_id)
                     ->where('kategori', 'Kasir')
                     ->update(['status' => 'Selesai']);
+                
+                $pembayaran->pendaftaran->update(['status' => 'Selesai']);
             }
         });
 
@@ -38,6 +40,8 @@ class Pembayaran extends Model
                 Antrian::where('pendaftaran_id', $pembayaran->pendaftaran_id)
                     ->where('kategori', 'Kasir')
                     ->update(['status' => 'Selesai']);
+                
+                $pembayaran->pendaftaran->update(['status' => 'Selesai']);
             }
         });
     }
