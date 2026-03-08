@@ -81,13 +81,8 @@ class ResepResource extends Resource
                 ->label('Panggil')
                 ->icon('heroicon-o-megaphone')
                 ->color('warning')
-                ->extraAttributes([
-                    'onclick' => "
-                        const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->rekamMedis->pendaftaran->no_antrian }} + ', silakan menuju ke Apotek');
-                        msg.lang = 'id-ID';
-                        msg.rate = 0.9;
-                        window.speechSynthesis.speak(msg);
-                    "
+                ->extraAttributes(fn (Resep $record): array => [
+                    'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->rekamMedis->pendaftaran->no_antrian) . ", silakan menuju ke Apotek'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                 ]),
             Tables\Actions\Action::make('proses')
                 ->label('Proses')

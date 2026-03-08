@@ -84,13 +84,8 @@ class AntrianPoliResource extends Resource
                 ->label('Panggil')
                 ->icon('heroicon-o-megaphone')
                 ->color('warning')
-                ->extraAttributes([
-                    'onclick' => "
-                        const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->no_antrian }} + ', silakan menuju ke Poli ' + '{{ \$record->poli?->nama_poli }}');
-                        msg.lang = 'id-ID';
-                        msg.rate = 0.9;
-                        window.speechSynthesis.speak(msg);
-                    "
+                ->extraAttributes(fn (Pendaftaran $record): array => [
+                    'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var unit = 'Poli " . addslashes($record->poli?->nama_poli ?? "") . "'; var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->no_antrian) . ", silakan menuju ke ' + unit); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                 ]),
             Tables\Actions\Action::make('periksa')
                 ->label('Periksa')

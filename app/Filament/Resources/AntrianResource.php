@@ -111,6 +111,9 @@ class AntrianResource extends Resource
                     ->label('Panggil')
                     ->icon('heroicon-o-megaphone')
                     ->color('warning')
+                    ->extraAttributes(fn (Antrian $record): array => [
+                        'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var unit = '" . addslashes($record->kategori === 'Poli' ? 'Poli ' . ($record->poli?->nama_poli ?? '') : ($record->kategori === 'Obat' ? 'Apotek' : $record->kategori)) . "'; var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->nomor_antrian) . ", silakan menuju ke ' + unit); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
+                    ])
                     ->action(fn (Antrian $record) => $record->update(['status' => 'Dipanggil']))
                     ->visible(fn (Antrian $record) => $record->status === 'Menunggu'),
                 Tables\Actions\Action::make('selesai')

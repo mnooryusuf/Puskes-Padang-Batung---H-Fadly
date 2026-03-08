@@ -59,14 +59,9 @@ class AntrianApotekResource extends Resource
                 Action::make('panggil')
                     ->label('Panggil')
                     ->icon('heroicon-o-megaphone')
-                    ->color('warning')
-                    ->extraAttributes([
-                        'onclick' => "
-                            const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->nomor_antrian }} + ', silakan menuju ke Apotek');
-                            msg.lang = 'id-ID';
-                            msg.rate = 0.9;
-                            window.speechSynthesis.speak(msg);
-                        "
+                    ->color('info')
+                    ->extraAttributes(fn (Antrian $record): array => [
+                        'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . $record->nomor_antrian . ", silakan menuju ke Apotek'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                     ]),
                 Action::make('serahkan_obat')
                     ->label('Serahkan Obat')

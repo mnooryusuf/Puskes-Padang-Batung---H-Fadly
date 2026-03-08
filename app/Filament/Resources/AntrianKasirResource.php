@@ -59,13 +59,8 @@ class AntrianKasirResource extends Resource
                     ->label('Panggil')
                     ->icon('heroicon-o-megaphone')
                     ->color('warning')
-                    ->extraAttributes([
-                        'onclick' => "
-                            const msg = new SpeechSynthesisUtterance('Nomor antrian ' + {{ \$record->nomor_antrian }} + ', silakan menuju ke Kasir');
-                            msg.lang = 'id-ID';
-                            msg.rate = 0.9;
-                            window.speechSynthesis.speak(msg);
-                        "
+                    ->extraAttributes(fn (Antrian $record): array => [
+                        'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var unit = '" . addslashes($record->kategori === 'Poli' ? 'Poli ' . ($record->poli?->nama_poli ?? '') : ($record->kategori === 'Obat' ? 'Apotek' : $record->kategori)) . "'; var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->nomor_antrian) . ", silakan menuju ke ' + unit); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                     ]),
                 Action::make('proses_bayar')
                     ->label('Proses Bayar')
