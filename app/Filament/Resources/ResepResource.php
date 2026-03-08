@@ -21,11 +21,11 @@ use UnitEnum;
 class ResepResource extends Resource
 {
     protected static ?string $model = Resep::class;
-    protected static bool $shouldRegisterNavigation = false;
-    protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
+    protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Pelayanan';
-    protected static ?string $modelLabel = 'Resep';
-    protected static ?string $pluralModelLabel = 'Resep';
+    protected static ?string $modelLabel = 'Antrian Apotek';
+    protected static ?string $pluralModelLabel = 'Antrian Apotek';
+    protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
     {
@@ -44,8 +44,62 @@ class ResepResource extends Resource
         return $table->columns([
             TextColumn::make('created_at')->label('Tanggal')->dateTime()->sortable(),
             TextColumn::make('rekamMedis.pendaftaran.pasien.nama_pasien')->label('Pasien')->searchable(),
-            TextColumn::make('detail_reseps_count')->counts('detailReseps')->label('Jumlah Obat')->badge(),
+            TextColumn::make('status_pengambilan')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'Menunggu' => 'gray',
+                    'Diproses' => 'warning',
+                    'Siap Diambil' => 'info',
+                    'Sudah Diserahkan' => 'success',
+                    default => 'gray',
+                }),
+            TextColumn::make('detail_reseps_count')->counts('detailReseps')->label('Jml Item'),
         ])->actions([
+            Tables\Actions\Action::make('proses')
+                ->label('Proses')
+                ->icon('heroicon-o-play')
+                ->color('warning')
+                ->action(fn (Resep $record) => $record->update(['status_pengambilan' => 'Diproses']))
+                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Menunggu'),
+            
+            Tables\Actions\Action::make('siap')
+                ->label('Siap Diambil')
+                ->icon('heroicon-o-check-circle')
+                ->color('info')
+                ->action(fn (Resep $record) => $record->update(['status_pengambilan' => 'Siap Diambil']))
+                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Diproses'),
+
+            Tables\Actions\Action::make('serahkan')
+                ->label('Serahkan Obat')
+                ->icon('heroicon-o-hand-raised')
+                ->color('success')
+                ->requiresConfirmation()
+                ->action(function (Resep $record) {
+                    // Update Status
+                    $record->update(['status_pengambilan' => 'Sudah Diserahkan']);
+
+                    // Kurangi Stok Otomatis
+                    foreach ($record->detailReseps as $detail) {
+                        $obat = $detail->obat;
+                        if ($obat) {
+                            $obat->decrement('stok', $detail->jumlah);
+                        }
+                    }
+
+                    // Update Antrian Pasien Selesai jika kategori Obat
+                    \App\Models\Antrian::where('pendaftaran_id', $record->rekamMedis->pendaftaran_id)
+                        ->where('kategori', 'Obat')
+                        ->update(['status' => 'Selesai']);
+                })
+                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Siap Diambil'),
+
+            Tables\Actions\Action::make('cetak_etiket')
+                ->label('Etiket')
+                ->icon('heroicon-o-tag')
+                ->color('gray')
+                ->url(fn (Resep $record): string => route('resep.cetak-etiket', $record))
+                ->openUrlInNewTab(),
+
             ViewAction::make(),
             EditAction::make(),
             DeleteAction::make(),

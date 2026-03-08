@@ -13,7 +13,7 @@ class Resep extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['rekam_medis_id'];
+    protected $fillable = ['rekam_medis_id', 'status_pengambilan'];
 
     public static function booted()
     {
