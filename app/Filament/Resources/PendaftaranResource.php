@@ -41,7 +41,22 @@ class PendaftaranResource extends Resource
                 Select::make('jenis_kelamin')->options(['L'=>'L','P'=>'P'])->required(),
                 TextInput::make('no_hp')->required(),
                 TextInput::make('alamat')->required(),
-            ])->required(),
+            ])
+            ->required()
+            ->live()
+            ->afterStateUpdated(function ($state, callable $set) {
+                if ($state) {
+                    $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
+                    $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
+                }
+            }),
+            Select::make('jenis_kunjungan')
+                ->options([
+                    'Baru' => 'Pasien Baru',
+                    'Lama' => 'Pasien Lama',
+                ])
+                ->required()
+                ->label('Jenis Kunjungan'),
             DatePicker::make('tanggal_daftar')->default(now())->required(),
             Select::make('poli_id')
                 ->relationship('poli', 'nama_poli')
@@ -85,6 +100,13 @@ class PendaftaranResource extends Resource
             TextColumn::make('tanggal_daftar')->date()->sortable(),
             TextColumn::make('pasien.no_rm')->label('No. RM')->searchable()->sortable(),
             TextColumn::make('pasien.nama_pasien')->label('Nama Pasien')->searchable()->sortable(),
+            TextColumn::make('jenis_kunjungan')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'Baru' => 'info',
+                    'Lama' => 'success',
+                    default => 'gray',
+                }),
             TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
             TextColumn::make('jenis_pembayaran')->badge()->color(fn (string $state): string => match ($state) {
                 'BPJS' => 'success',

@@ -12,7 +12,7 @@ class Pendaftaran extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pasien_id', 'tanggal_daftar', 'poli_id', 'no_antrian', 'jenis_pembayaran', 'status'];
+    protected $fillable = ['pasien_id', 'jenis_kunjungan', 'tanggal_daftar', 'poli_id', 'no_antrian', 'jenis_pembayaran', 'status'];
 
     public static function booted()
     {
