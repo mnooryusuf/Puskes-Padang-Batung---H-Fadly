@@ -200,6 +200,7 @@ class RekamMedisResource extends Resource
                                     ->afterStateUpdated(function ($state, callable $set) {
                                         $obat = \App\Models\Obat::find($state);
                                         $set('satuan_view', $obat?->satuan);
+                                        $set('stok_info', $obat ? "Stok: {$obat->stok}" : null);
                                     }),
                                 TextInput::make('satuan_view')
                                     ->label('Satuan')
@@ -213,7 +214,28 @@ class RekamMedisResource extends Resource
                                         }
                                     }),
                                 TextInput::make('dosis')->required(),
-                                TextInput::make('jumlah')->numeric()->required(),
+                                TextInput::make('jumlah')
+                                    ->numeric()
+                                    ->required()
+                                    ->placeholder(function (callable $get) {
+                                        $obatId = $get('obat_id');
+                                        if ($obatId) {
+                                            $obat = \App\Models\Obat::find($obatId);
+                                            return $obat ? "Stok: {$obat->stok}" : null;
+                                        }
+                                        return 'Pilih obat dulu';
+                                    })
+                                    ->helperText(function (callable $get) {
+                                        $obatId = $get('obat_id');
+                                        if ($obatId) {
+                                            $obat = \App\Models\Obat::find($obatId);
+                                            if ($obat && $obat->stok < 10) {
+                                                return "⚠️ Stok menipis! ({$obat->stok})";
+                                            }
+                                            return $obat ? "Tersedia: {$obat->stok}" : null;
+                                        }
+                                        return null;
+                                    }),
                             ])->columns(4)->required(),
                     ])->disableItemCreation(),
             ]),
