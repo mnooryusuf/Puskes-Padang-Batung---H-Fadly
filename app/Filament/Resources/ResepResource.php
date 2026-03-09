@@ -77,58 +77,6 @@ class ResepResource extends Resource
                 }),
             TextColumn::make('detail_reseps_count')->counts('detailReseps')->label('Jml Item'),
         ])->actions([
-            Tables\Actions\Action::make('panggil')
-                ->label('Panggil')
-                ->icon('heroicon-o-megaphone')
-                ->color('warning')
-                ->extraAttributes(fn (Resep $record): array => [
-                    'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->rekamMedis->pendaftaran->no_antrian) . ", silakan menuju ke Apotek'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
-                ]),
-            Tables\Actions\Action::make('proses')
-                ->label('Proses')
-                ->icon('heroicon-o-play')
-                ->color('warning')
-                ->action(fn (Resep $record) => $record->update(['status_pengambilan' => 'Diproses']))
-                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Menunggu'),
-            
-            Tables\Actions\Action::make('siap')
-                ->label('Siap Diambil')
-                ->icon('heroicon-o-check-circle')
-                ->color('info')
-                ->action(fn (Resep $record) => $record->update(['status_pengambilan' => 'Siap Diambil']))
-                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Diproses'),
-
-            Tables\Actions\Action::make('serahkan')
-                ->label('Serahkan Obat')
-                ->icon('heroicon-o-hand-raised')
-                ->color('success')
-                ->requiresConfirmation()
-                ->action(function (Resep $record) {
-                    // Update Status
-                    $record->update(['status_pengambilan' => 'Sudah Diserahkan']);
-
-                    // Kurangi Stok Otomatis
-                    foreach ($record->detailReseps as $detail) {
-                        $obat = $detail->obat;
-                        if ($obat) {
-                            $obat->decrement('stok', $detail->jumlah);
-                        }
-                    }
-
-                    // Update Antrian Pasien Selesai jika kategori Obat
-                    \App\Models\Antrian::where('pendaftaran_id', $record->rekamMedis->pendaftaran_id)
-                        ->where('kategori', 'Obat')
-                        ->update(['status' => 'Selesai']);
-                })
-                ->visible(fn (Resep $record) => $record->status_pengambilan === 'Siap Diambil'),
-
-            Tables\Actions\Action::make('cetak_etiket')
-                ->label('Etiket')
-                ->icon('heroicon-o-tag')
-                ->color('gray')
-                ->url(fn (Resep $record): string => route('resep.cetak-etiket', $record))
-                ->openUrlInNewTab(),
-
             ViewAction::make(),
             EditAction::make(),
             DeleteAction::make(),

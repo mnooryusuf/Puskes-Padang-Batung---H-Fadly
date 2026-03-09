@@ -48,9 +48,16 @@ class AntrianApotekResource extends Resource
                 TextColumn::make('pendaftaran.rekamMedis.resep.id')
                     ->label('Resep')
                     ->formatStateUsing(fn ($state) => $state ? "Resep #$state" : 'Tidak Ada'),
-                TextColumn::make('status')
+                TextColumn::make('pendaftaran.rekamMedis.resep.status_pengambilan')
+                    ->label('Status Resep')
                     ->badge()
-                    ->color(fn ($state) => $state === 'Menunggu' ? 'gray' : 'info'),
+                    ->color(fn (string $state): string => match ($state) {
+                        'Menunggu' => 'gray',
+                        'Diproses' => 'warning',
+                        'Siap Diambil' => 'info',
+                        'Sudah Diserahkan' => 'success',
+                        default => 'gray',
+                    }),
                 TextColumn::make('created_at')
                     ->label('Waktu Antri')
                     ->time(),
@@ -63,14 +70,51 @@ class AntrianApotekResource extends Resource
                     ->extraAttributes(fn (Antrian $record): array => [
                         'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . $record->nomor_antrian . ", silakan menuju ke Apotek'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                     ]),
+                Action::make('proses')
+                    ->label('Proses')
+                    ->icon('heroicon-o-play')
+                    ->color('warning')
+                    ->action(fn (Antrian $record) => $record->pendaftaran->rekamMedis->resep->update(['status_pengambilan' => 'Diproses']))
+                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Menunggu'),
+
+                Action::make('cetak_etiket')
+                    ->label('Etiket')
+                    ->icon('heroicon-o-tag')
+                    ->color('gray')
+                    ->url(fn (Antrian $record): ?string => $record->pendaftaran->rekamMedis?->resep ? route('resep.cetak-etiket', $record->pendaftaran->rekamMedis->resep) : null)
+                    ->openUrlInNewTab()
+                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep !== null),
+
+                Action::make('siap')
+                    ->label('Siap Diambil')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('info')
+                    ->action(fn (Antrian $record) => $record->pendaftaran->rekamMedis->resep->update(['status_pengambilan' => 'Siap Diambil']))
+                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Diproses'),
+
                 Action::make('serahkan_obat')
                     ->label('Serahkan Obat')
-                    ->icon('heroicon-o-check-circle')
+                    ->icon('heroicon-o-hand-raised')
                     ->color('success')
                     ->requiresConfirmation()
                     ->modalHeading('Konfirmasi Penyerahan Obat')
-                    ->modalDescription('Pastikan obat sudah diserahkan kepada pasien. Pasien akan otomatis diarahkan ke Kasir.')
+                    ->modalDescription('Pastikan obat sudah diserahkan kepada pasien. Stok akan dikurangi otomatis dan pasien diarahkan ke Kasir.')
                     ->action(function (Antrian $record) {
+                        $resep = $record->pendaftaran->rekamMedis?->resep;
+                        if ($resep) {
+                            // Update Status Resep
+                            $resep->update(['status_pengambilan' => 'Sudah Diserahkan']);
+
+                            // Kurangi Stok Otomatis
+                            foreach ($resep->detailReseps as $detail) {
+                                $obat = $detail->obat;
+                                if ($obat) {
+                                    $obat->decrement('stok', $detail->jumlah);
+                                }
+                            }
+                        }
+
+                        // Update Status Antrian
                         $record->update(['status' => 'Selesai']);
                         
                         // Update global pendaftaran status
@@ -87,7 +131,8 @@ class AntrianApotekResource extends Resource
                                 'status' => 'Menunggu',
                             ]
                         );
-                    }),
+                    })
+                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Siap Diambil'),
             ])
             ->poll('10s');
     }

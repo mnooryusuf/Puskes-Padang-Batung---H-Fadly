@@ -67,11 +67,13 @@ class PendaftaranResource extends Resource
                 ->label('No. Antrian'),
             Select::make('status')
                 ->options([
-                    'Menunggu' => 'Menunggu',
-                    'Diperiksa' => 'Diperiksa',
+                    'Menunggu Poli' => 'Menunggu Poli',
+                    'Pemeriksaan' => 'Pemeriksaan',
+                    'Menunggu Obat' => 'Menunggu Obat',
+                    'Menunggu Pembayaran' => 'Menunggu Pembayaran',
                     'Selesai' => 'Selesai',
                 ])
-                ->default('Menunggu')
+                ->default('Menunggu Poli')
                 ->required(),
         ]);
     }
@@ -92,8 +94,10 @@ class PendaftaranResource extends Resource
             TextColumn::make('status')
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
-                    'Menunggu' => 'warning',
-                    'Diperiksa' => 'info',
+                    'Menunggu Poli' => 'warning',
+                    'Pemeriksaan' => 'info',
+                    'Menunggu Obat' => 'warning',
+                    'Menunggu Pembayaran' => 'success',
                     'Selesai' => 'success',
                     default => 'gray',
                 })

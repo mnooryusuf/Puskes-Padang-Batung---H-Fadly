@@ -60,8 +60,8 @@ class AntrianPoliResource extends Resource
             TextColumn::make('status')
                 ->badge()
                 ->color(fn (string $state): string => match ($state) {
-                    'Menunggu' => 'warning',
-                    'Diperiksa' => 'info',
+                    'Menunggu Poli' => 'warning',
+                    'Pemeriksaan' => 'info',
                     'Selesai' => 'success',
                     default => 'gray',
                 }),
@@ -73,11 +73,11 @@ class AntrianPoliResource extends Resource
                 ->label('Filter Poli'),
             Tables\Filters\SelectFilter::make('status')
                 ->options([
-                    'Menunggu' => 'Menunggu',
-                    'Diperiksa' => 'Diperiksa',
+                    'Menunggu Poli' => 'Menunggu Poli',
+                    'Pemeriksaan' => 'Pemeriksaan',
                     'Selesai' => 'Selesai',
                 ])
-                ->default('Menunggu'),
+                ->default('Menunggu Poli'),
         ])
         ->actions([
             Tables\Actions\Action::make('panggil')
