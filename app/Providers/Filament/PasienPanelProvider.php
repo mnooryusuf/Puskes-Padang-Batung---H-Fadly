@@ -2,7 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,28 +18,25 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class PasienPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->brandName('Aplikasi Rawat Jalan Puskesmas')
-            ->id('admin')
-            ->path('dashboard')
-            ->login(Login::class)
+            ->id('pasien')
+            ->path('pasien')
             ->colors([
-                'primary' => '#00796B',
-                'warning' => '#FF9800',
+                'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->discoverResources(in: app_path('Filament/Pasien/Resources'), for: 'App\\Filament\\Pasien\\Resources')
+            ->discoverPages(in: app_path('Filament/Pasien/Pages'), for: 'App\\Filament\\Pasien\\Pages')
             ->pages([
-                // Pages are auto-discovered from app/Filament/Pages
+                Pages\Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Pasien/Widgets'), for: 'App\\Filament\\Pasien\\Widgets')
             ->widgets([
-                //
+                Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

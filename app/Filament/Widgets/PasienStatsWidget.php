@@ -1,0 +1,88 @@
+<?php
+
+namespace App\Filament\Widgets;
+
+use App\Models\Antrian;
+use App\Models\Pendaftaran;
+use Filament\Support\Enums\IconPosition;
+use Filament\Widgets\StatsOverviewWidget as BaseWidget;
+use Filament\Widgets\StatsOverviewWidget\Stat;
+
+class PasienStatsWidget extends BaseWidget
+{
+    public static function canView(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return $user?->hasRole('pasien') ?? false;
+    }
+
+    protected function getStats(): array
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $pasien = $user?->pasien;
+
+        if (!$pasien) {
+            return [
+                Stat::make('Profil', 'Data pasien belum terhubung')
+                    ->color('danger'),
+            ];
+        }
+
+        $today = now()->startOfDay();
+
+        // Total kunjungan sepanjang waktu
+        $totalKunjungan = Pendaftaran::where('pasien_id', $pasien->id)->count();
+
+        // Antrian aktif hari ini
+        $antrianAktif = Pendaftaran::where('pasien_id', $pasien->id)
+            ->where('tanggal_daftar', now()->toDateString())
+            ->whereNotIn('status', ['Selesai'])
+            ->first();
+
+        $antrianLabel = $antrianAktif
+            ? "Antrian #{$antrianAktif->no_antrian} - {$antrianAktif->poli?->nama_poli}"
+            : 'Tidak ada antrian';
+
+        $antrianWarning = false;
+        $antrianStatusLabel = '-';
+
+        if ($antrianAktif) {
+            $antrianStatusLabel = $antrianAktif->status;
+            
+            // Hitung antrian di depannya untuk poli yang sama hari ini
+            if ($antrianAktif->status === 'Menunggu Poli') {
+                $sedangDilayani = Antrian::where('poli_id', $antrianAktif->poli_id)
+                    ->whereDate('created_at', now()->toDateString())
+                    ->whereIn('status', ['Dipanggil', 'Pemeriksaan'])
+                    ->max('nomor_antrian') ?? 0;
+                
+                $sisaAntrian = $antrianAktif->no_antrian - $sedangDilayani;
+                
+                if ($sisaAntrian > 0 && $sisaAntrian <= 3) {
+                    $antrianWarning = true;
+                    $antrianStatusLabel = "⚠️ Bersiap! Sisa {$sisaAntrian} antrian lagi.";
+                } elseif ($sisaAntrian > 3) {
+                    $antrianStatusLabel = "Sisa {$sisaAntrian} antrian di depan Anda.";
+                }
+            }
+        }
+
+        return [
+            Stat::make('Selamat Datang', $pasien->nama_pasien)
+                ->description("No. RM: {$pasien->no_rm}")
+                ->descriptionIcon('heroicon-m-identification', IconPosition::Before)
+                ->color('primary'),
+            Stat::make('Antrian Hari Ini', $antrianLabel)
+                ->description($antrianStatusLabel)
+                ->descriptionIcon($antrianWarning ? 'heroicon-m-bell-alert' : 'heroicon-m-clock', IconPosition::Before)
+                ->color($antrianWarning ? 'danger' : ($antrianAktif ? 'warning' : 'success')),
+
+            Stat::make('Total Kunjungan', $totalKunjungan)
+                ->description('Riwayat kunjungan Anda')
+                ->descriptionIcon('heroicon-m-calendar-days', IconPosition::Before)
+                ->color('info'),
+        ];
+    }
+}

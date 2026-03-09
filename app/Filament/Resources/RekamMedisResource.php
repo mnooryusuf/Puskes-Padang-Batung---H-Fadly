@@ -27,6 +27,11 @@ class RekamMedisResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Rekam Medis';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Rekam Medis';
 
     public static function form(Form $form): Form

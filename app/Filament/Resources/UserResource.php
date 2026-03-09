@@ -22,6 +22,11 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Manajemen';
     protected static ?string $modelLabel = 'Pengguna';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Pengguna';
 
     public static function form(Form $form): Form

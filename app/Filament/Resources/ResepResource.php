@@ -24,6 +24,11 @@ class ResepResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Data Resep';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Data Resep';
     protected static ?int $navigationSort = 3;
 

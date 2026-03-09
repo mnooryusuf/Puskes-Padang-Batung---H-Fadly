@@ -19,6 +19,11 @@ class PenyakitResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-bug-ant';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Penyakit (ICD-10)';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Penyakit (ICD-10)';
 
     public static function form(Form $form): Form

@@ -20,6 +20,11 @@ class AntrianResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Antrian';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Antrian';
 
     public static function form(Form $form): Form

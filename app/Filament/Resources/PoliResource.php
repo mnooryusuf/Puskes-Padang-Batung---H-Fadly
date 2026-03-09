@@ -20,6 +20,11 @@ class PoliResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Poli';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Poli';
 
     public static function form(Form $form): Form

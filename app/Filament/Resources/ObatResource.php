@@ -22,6 +22,11 @@ class ObatResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Obat';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Obat';
 
     public static function form(Form $form): Form

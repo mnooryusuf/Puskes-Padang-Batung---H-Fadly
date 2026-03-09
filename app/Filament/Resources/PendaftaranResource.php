@@ -23,6 +23,11 @@ class PendaftaranResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Pendaftaran';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Pendaftaran';
 
     public static function form(Form $form): Form

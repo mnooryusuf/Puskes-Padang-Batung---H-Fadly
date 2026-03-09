@@ -23,6 +23,11 @@ class DokterResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Dokter';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Dokter';
 
     public static function form(Form $form): Form

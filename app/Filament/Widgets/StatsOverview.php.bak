@@ -15,9 +15,7 @@ class StatsOverview extends BaseWidget
 {
     public static function canView(): bool
     {
-        /** @var \App\Models\User|null $user */
-        $user = auth()->user();
-        return !($user?->hasRole('pasien') ?? false);
+        return !auth()->user()?->hasRole('pasien');
     }
 
     protected function getStats(): array

@@ -23,6 +23,11 @@ class AntrianPoliResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Antrian Poli';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Antrian Poli';
 
     public static function getNavigationBadge(): ?string

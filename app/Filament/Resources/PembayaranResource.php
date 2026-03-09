@@ -20,6 +20,11 @@ class PembayaranResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Kasir / Pembayaran';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $pluralModelLabel = 'Kasir / Pembayaran';
 
     public static function form(Form $form): Form

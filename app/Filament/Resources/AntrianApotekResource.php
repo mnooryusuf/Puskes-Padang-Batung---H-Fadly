@@ -17,6 +17,11 @@ class AntrianApotekResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Antrian Apotek';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $slug = 'antrian-apotek';
 
     public static function getNavigationBadge(): ?string

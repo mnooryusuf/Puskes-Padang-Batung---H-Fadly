@@ -17,6 +17,11 @@ class AntrianKasirResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Antrian Kasir';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
     protected static ?string $slug = 'antrian-kasir';
 
     public static function getNavigationBadge(): ?string
