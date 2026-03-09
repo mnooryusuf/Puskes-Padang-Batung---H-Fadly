@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailResep extends Model
 {
+    protected $table = 'detail_resep';
+
     use HasFactory;
 
     protected $fillable = ['resep_id', 'obat_id', 'dosis', 'jumlah', 'jumlah_diserahkan', 'obat_pengganti_id'];

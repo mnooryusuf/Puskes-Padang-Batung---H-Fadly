@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Pendaftaran extends Model
 {
+    protected $table = 'pendaftaran';
+
     use HasFactory;
 
     protected $fillable = ['pasien_id', 'jenis_kunjungan', 'tanggal_daftar', 'poli_id', 'no_antrian', 'jenis_pembayaran', 'status'];

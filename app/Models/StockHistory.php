@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockHistory extends Model
 {
+    protected $table = 'stock_history';
+
     use HasFactory;
 
     protected $fillable = [

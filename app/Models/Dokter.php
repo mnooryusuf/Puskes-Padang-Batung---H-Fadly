@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Dokter extends Model
 {
+    protected $table = 'dokter';
+
     use HasFactory;
 
     protected $fillable = ['nama_dokter', 'spesialis', 'user_id'];

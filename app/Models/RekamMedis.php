@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class RekamMedis extends Model
 {
+    protected $table = 'rekam_medis';
+
     use HasFactory;
 
     protected $fillable = [

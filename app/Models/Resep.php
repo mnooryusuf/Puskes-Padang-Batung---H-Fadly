@@ -11,6 +11,8 @@ use App\Models\Antrian;
 
 class Resep extends Model
 {
+    protected $table = 'resep';
+
     use HasFactory;
 
     protected $fillable = ['rekam_medis_id', 'status_pengambilan', 'catatan_farmasi'];

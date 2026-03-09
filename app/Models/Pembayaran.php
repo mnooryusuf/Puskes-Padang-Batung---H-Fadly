@@ -9,6 +9,8 @@ use App\Models\Antrian;
 
 class Pembayaran extends Model
 {
+    protected $table = 'pembayaran';
+
     use HasFactory;
 
     protected $fillable = [
