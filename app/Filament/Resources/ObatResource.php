@@ -19,7 +19,7 @@ use UnitEnum;
 class ObatResource extends Resource
 {
     protected static ?string $model = Obat::class;
-    protected static ?string $navigationIcon = 'heroicon-o-beaker';
+    protected static ?string $navigationIcon = 'heroicon-o-cube';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Obat';
 

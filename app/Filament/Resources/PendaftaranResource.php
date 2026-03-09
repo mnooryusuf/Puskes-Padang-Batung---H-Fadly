@@ -23,6 +23,7 @@ class PendaftaranResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Pendaftaran';
+    protected static ?int $navigationSort = 1;
 
     public static function canAccess(): bool
     {
@@ -100,41 +101,52 @@ class PendaftaranResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->columns([
-            TextColumn::make('no_antrian')->sortable(),
-            TextColumn::make('tanggal_daftar')->date()->sortable(),
-            TextColumn::make('pasien.no_rm')->label('No. RM')->searchable()->sortable(),
-            TextColumn::make('pasien.nama_pasien')->label('Nama Pasien')->searchable()->sortable(),
-            TextColumn::make('jenis_kunjungan')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'Baru' => 'info',
-                    'Lama' => 'success',
+        return $table
+            ->defaultSort('created_at', 'desc')
+            ->columns([
+                TextColumn::make('no_antrian')->sortable(),
+                TextColumn::make('tanggal_daftar')->date()->sortable(),
+                TextColumn::make('pasien.no_rm')->label('No. RM')->searchable()->sortable(),
+                TextColumn::make('pasien.nama_pasien')->label('Nama Pasien')->searchable()->sortable(),
+                TextColumn::make('jenis_kunjungan')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Baru' => 'info',
+                        'Lama' => 'success',
+                        default => 'gray',
+                    }),
+                TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
+                TextColumn::make('jenis_pembayaran')->badge()->color(fn (string $state): string => match ($state) {
+                    'BPJS' => 'success',
+                    'Umum' => 'info',
                     default => 'gray',
                 }),
-            TextColumn::make('poli.nama_poli')->label('Poli')->sortable(),
-            TextColumn::make('jenis_pembayaran')->badge()->color(fn (string $state): string => match ($state) {
-                'BPJS' => 'success',
-                'Umum' => 'info',
-                default => 'gray',
-            }),
-            TextColumn::make('status')
-                ->badge()
-                ->color(fn (string $state): string => match ($state) {
-                    'Menunggu Poli' => 'warning',
-                    'Pemeriksaan' => 'info',
-                    'Menunggu Obat' => 'warning',
-                    'Menunggu Pembayaran' => 'success',
-                    'Selesai' => 'success',
-                    default => 'gray',
-                })
-                ->sortable(),
-        ])->actions([
-            EditAction::make(),
-            DeleteAction::make(),
-        ])->groupedBulkActions([
-            DeleteBulkAction::make(),
-        ]);
+                TextColumn::make('status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'Menunggu Poli' => 'warning',
+                        'Pemeriksaan' => 'info',
+                        'Menunggu Obat' => 'warning',
+                        'Menunggu Pembayaran' => 'success',
+                        'Selesai' => 'success',
+                        default => 'gray',
+                    })
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\Filter::make('hari_ini')
+                    ->label('Hari Ini')
+                    ->query(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->whereDate('tanggal_daftar', now()))
+                    ->default(),
+            ])
+            ->actions([
+                EditAction::make(),
+                DeleteAction::make(),
+            ])
+            ->groupedBulkActions([
+                DeleteBulkAction::make(),
+            ])
+            ->poll('10s');
     }
 
     public static function getPages(): array

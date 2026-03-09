@@ -17,9 +17,10 @@ class PembayaranResource extends Resource
 {
     protected static ?string $model = Pembayaran::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
+    protected static ?string $navigationIcon = 'heroicon-o-receipt-percent';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Kasir / Pembayaran';
+    protected static ?int $navigationSort = 6;
 
     public static function canAccess(): bool
     {

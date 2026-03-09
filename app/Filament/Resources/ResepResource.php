@@ -24,6 +24,7 @@ class ResepResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Data Resep';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function canAccess(): bool
     {

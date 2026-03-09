@@ -23,7 +23,7 @@ use UnitEnum;
 class PasienResource extends Resource
 {
     protected static ?string $model = Pasien::class;
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationIcon = 'heroicon-o-identification';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Pasien';
 

@@ -27,6 +27,7 @@ class RekamMedisResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Rekam Medis';
+    protected static ?int $navigationSort = 3;
 
     public static function canAccess(): bool
     {

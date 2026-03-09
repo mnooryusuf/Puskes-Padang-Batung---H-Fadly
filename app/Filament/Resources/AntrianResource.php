@@ -20,6 +20,7 @@ class AntrianResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-queue-list';
     protected static ?string $navigationGroup = 'Pelayanan';
     protected static ?string $modelLabel = 'Antrian';
+    protected static bool $shouldRegisterNavigation = false;
 
     public static function canAccess(): bool
     {
