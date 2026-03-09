@@ -36,7 +36,21 @@ class PoliResource extends Resource
                         ->label('Nama Poli')
                         ->required()
                         ->unique(ignoreRecord: true)
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->prefix('Poli')
+                        ->placeholder('Contoh: Umum, Gigi, Saraf, Anak')
+                        ->helperText('Ketik nama spesialisasi saja, awalan "Poli" otomatis ditambahkan')
+                        ->dehydrateStateUsing(function ($state) {
+                            if ($state && !str_starts_with($state, 'Poli ')) {
+                                return 'Poli ' . $state;
+                            }
+                            return $state;
+                        })
+                        ->afterStateHydrated(function ($component, $state) {
+                            if ($state && str_starts_with($state, 'Poli ')) {
+                                $component->state(substr($state, 5));
+                            }
+                        }),
                     Forms\Components\TextInput::make('biaya_registrasi')
                         ->label('Biaya Pendaftaran')
                         ->numeric()
