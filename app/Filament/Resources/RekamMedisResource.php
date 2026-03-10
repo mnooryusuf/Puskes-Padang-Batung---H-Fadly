@@ -48,6 +48,7 @@ class RekamMedisResource extends Resource
                     ->live(),
                 Select::make('dokter_id')
                     ->relationship('dokter', 'nama_dokter')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama_dokter} - (" . ($record->poli?->nama_poli ?? 'Tanpa Poli') . ")")
                     ->searchable()
                     ->preload()
                     ->required(),

@@ -34,6 +34,7 @@ class JadwalDokterResource extends Resource
                 Forms\Components\Section::make('Informasi Jadwal')->schema([
                     Forms\Components\Select::make('dokter_id')
                         ->relationship('dokter', 'nama_dokter')
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama_dokter} - (" . ($record->poli?->nama_poli ?? 'Tanpa Poli') . ")")
                         ->searchable()
                         ->preload()
                         ->required(),
