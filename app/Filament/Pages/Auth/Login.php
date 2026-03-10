@@ -34,7 +34,7 @@ class Login extends BasePage
         return $form
             ->schema([
                 $this->getUsernameFormComponent(),
-                $this->getPasswordFormComponent(),
+                $this->getPasswordFormComponent()->revealable(),
                 $this->getRememberFormComponent(),
             ])
             ->statePath('data');

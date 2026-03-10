@@ -115,7 +115,7 @@ class PasienResource extends Resource
             Section::make('Akun Sistem')->schema([
                 Placeholder::make('info_akun')
                     ->label('Informasi Akun')
-                    ->content('Akun login pasien akan dibuat otomatis menggunakan No. RM sebagai username dan password default "Puskes[No. RM]".'),
+                    ->content('Akun login pasien akan dibuat otomatis menggunakan No. RM sebagai username dan password default "padangbatung".'),
             ])->visible(fn($operation) => $operation === 'create'),
         ];
     }

@@ -54,7 +54,8 @@ class Pasien extends Model
             if (!$pasien->user_id) {
                 $user = User::create([
                     'username' => $pasien->no_rm,
-                    'password' => \Illuminate\Support\Facades\Hash::make('Puskes' . $pasien->no_rm),
+                    'nama_lengkap' => $pasien->nama_pasien,
+                    'password' => \Illuminate\Support\Facades\Hash::make('padangbatung'),
                     'role' => 'pasien',
                 ]);
 

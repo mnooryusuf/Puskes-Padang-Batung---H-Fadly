@@ -23,6 +23,7 @@ class Dokter extends Model
                 
                 $user = User::create([
                     'username' => $username,
+                    'nama_lengkap' => $dokter->nama_dokter,
                     'password' => \Illuminate\Support\Facades\Hash::make('Dokter123'),
                     'role' => 'dokter',
                 ]);
