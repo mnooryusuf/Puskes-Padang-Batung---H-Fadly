@@ -99,7 +99,7 @@ class AntrianApotekResource extends Resource
                     ->slideOver()
                     ->modalHeading('Kelola Resep & Obat')
                     ->modalDescription('Sesuaikan jumlah obat, ganti obat jika perlu, dan tambahkan catatan farmasi.')
-                    ->modalWidth('lg')
+                    ->modalWidth('2xl')
                     ->modalSubmitActionLabel('Simpan & Proses')
                     ->fillForm(function (Antrian $record): array {
                         $resep = $record->pendaftaran->rekamMedis?->resep;
@@ -107,12 +107,11 @@ class AntrianApotekResource extends Resource
 
                         $items = [];
                         foreach ($resep->detailReseps as $detail) {
-                            $obat = $detail->obat;
                             $items[] = [
                                 'detail_resep_id' => $detail->id,
                                 'obat_id' => $detail->obat_id,
-                                'nama_obat' => $obat?->nama_obat ?? '-',
-                                'stok_tersedia' => $obat?->stok ?? 0,
+                                'nama_obat_resep' => $detail->obat?->nama_obat, // For display only
+                                'stok_tersedia' => $detail->obat?->stok ?? 0,
                                 'dosis' => $detail->dosis,
                                 'jumlah_resep' => $detail->jumlah,
                                 'jumlah_diserahkan' => $detail->jumlah_diserahkan ?? $detail->jumlah,
@@ -129,15 +128,27 @@ class AntrianApotekResource extends Resource
                         Repeater::make('obat_items')
                             ->label('Daftar Obat Resep')
                             ->schema([
+                                \Filament\Forms\Components\Hidden::make('detail_resep_id'),
                                 Grid::make(3)->schema([
-                                    TextInput::make('nama_obat')
-                                        ->label('Nama Obat (Resep)')
-                                        ->disabled()
-                                        ->dehydrated(false),
+                                    Select::make('obat_id')
+                                        ->label('Nama Obat')
+                                        ->options(Obat::pluck('nama_obat', 'id'))
+                                        ->searchable()
+                                        ->required()
+                                        ->disabled(fn ($get) => filled($get('detail_resep_id')))
+                                        ->dehydrated()
+                                        ->afterStateUpdated(function ($state, $set) {
+                                            if ($state) {
+                                                $obat = Obat::find($state);
+                                                $set('stok_tersedia', $obat?->stok ?? 0);
+                                            }
+                                        })
+                                        ->live(),
                                     TextInput::make('dosis')
                                         ->label('Aturan Pakai')
-                                        ->disabled()
-                                        ->dehydrated(false),
+                                        ->required()
+                                        ->disabled(fn ($get) => filled($get('detail_resep_id')))
+                                        ->dehydrated(),
                                     TextInput::make('stok_tersedia')
                                         ->label('Stok Tersedia')
                                         ->disabled()
@@ -146,28 +157,33 @@ class AntrianApotekResource extends Resource
                                 ]),
                                 Grid::make(3)->schema([
                                     TextInput::make('jumlah_resep')
-                                        ->label('Jumlah Resep')
-                                        ->disabled()
-                                        ->dehydrated(false),
+                                        ->label('Jml Resep')
+                                        ->numeric()
+                                        ->disabled(fn ($get) => filled($get('detail_resep_id')))
+                                        ->dehydrated()
+                                        ->default(1),
                                     TextInput::make('jumlah_diserahkan')
-                                        ->label('Jumlah Diserahkan')
+                                        ->label('Jml Diserahkan')
                                         ->numeric()
                                         ->required()
                                         ->minValue(0)
                                         ->helperText('Sesuaikan jika stok tidak cukup'),
                                     Select::make('obat_pengganti_id')
-                                        ->label('Ganti Obat (Opsional)')
+                                        ->label('Ganti Obat (Substitusi)')
                                         ->options(Obat::pluck('nama_obat', 'id'))
                                         ->searchable()
                                         ->placeholder('Obat asli')
                                         ->helperText('Kosongkan jika tidak diganti'),
                                 ]),
                             ])
-                            ->deletable(false)
-                            ->addable(false)
+                            ->deletable(true)
+                            ->addable(true)
                             ->reorderable(false)
                             ->collapsible()
-                            ->itemLabel(fn (array $state): ?string => $state['nama_obat'] ?? 'Obat'),
+                            ->itemLabel(function (array $state): ?string {
+                                $obat = Obat::find($state['obat_id'] ?? null);
+                                return $obat?->nama_obat ?? 'Obat Baru';
+                            }),
                         Textarea::make('catatan_farmasi')
                             ->label('Catatan Farmasi')
                             ->placeholder('Tuliskan catatan untuk pasien atau staf (opsional)')
@@ -177,12 +193,25 @@ class AntrianApotekResource extends Resource
                         $resep = $record->pendaftaran->rekamMedis?->resep;
                         if (!$resep) return;
 
-                        // Match by index (repeater preserves order, same as fillForm)
-                        $details = $resep->detailReseps;
-                        foreach ($data['obat_items'] as $index => $item) {
-                            $detail = $details[$index] ?? null;
-                            if ($detail) {
-                                $detail->update([
+                        $submittedIds = collect($data['obat_items'])->pluck('detail_resep_id')->filter()->toArray();
+                        
+                        // 1. Delete items that were removed in the UI
+                        $resep->detailReseps()->whereNotIn('id', $submittedIds)->delete();
+
+                        // 2. Update existing or Create new items
+                        foreach ($data['obat_items'] as $item) {
+                            if (filled($item['detail_resep_id'])) {
+                                // Update existing
+                                \App\Models\DetailResep::find($item['detail_resep_id'])?->update([
+                                    'jumlah_diserahkan' => $item['jumlah_diserahkan'],
+                                    'obat_pengganti_id' => $item['obat_pengganti_id'] ?: null,
+                                ]);
+                            } else {
+                                // Create new
+                                $resep->detailReseps()->create([
+                                    'obat_id' => $item['obat_id'],
+                                    'dosis' => $item['dosis'],
+                                    'jumlah' => $item['jumlah_resep'] ?? 1,
                                     'jumlah_diserahkan' => $item['jumlah_diserahkan'],
                                     'obat_pengganti_id' => $item['obat_pengganti_id'] ?: null,
                                 ]);
@@ -197,7 +226,7 @@ class AntrianApotekResource extends Resource
 
                         Notification::make()
                             ->title('Resep berhasil diproses!')
-                            ->body('Data obat telah disimpan dan resep ditandai sebagai "Diproses".')
+                            ->body('Data obat telah diperbarui dan resep ditandai sebagai "Diproses".')
                             ->success()
                             ->send();
                     })
@@ -243,38 +272,40 @@ class AntrianApotekResource extends Resource
                     ->modalHeading('Konfirmasi Penyerahan Obat')
                     ->modalDescription('Pastikan obat sudah diserahkan kepada pasien. Stok akan dikurangi otomatis dan pasien diarahkan ke Kasir.')
                     ->action(function (Antrian $record) {
-                        $resep = $record->pendaftaran->rekamMedis?->resep;
-                        if ($resep) {
-                            // Update Status Resep
-                            $resep->update(['status_pengambilan' => 'Sudah Diserahkan']);
+                        \Illuminate\Support\Facades\DB::transaction(function () use ($record) {
+                            $resep = $record->pendaftaran->rekamMedis?->resep;
+                            if ($resep) {
+                                // Update Status Resep
+                                $resep->update(['status_pengambilan' => 'Sudah Diserahkan']);
 
-                            // Kurangi Stok berdasarkan jumlah_diserahkan & obat aktual
-                            foreach ($resep->detailReseps as $detail) {
-                                $obat = $detail->obat_aktual; // uses accessor (substituted or original)
-                                $jumlah = $detail->jumlah_aktual; // uses accessor
-                                if ($obat && $jumlah > 0) {
-                                    $obat->decrement('stok', $jumlah);
+                                // Kurangi Stok berdasarkan jumlah_diserahkan & obat aktual
+                                foreach ($resep->detailReseps as $detail) {
+                                    $obat = $detail->obat_aktual; // uses accessor (substituted or original)
+                                    $jumlah = $detail->jumlah_aktual; // uses accessor
+                                    if ($obat && $jumlah > 0) {
+                                        $obat->decrement('stok', $jumlah);
+                                    }
                                 }
                             }
-                        }
 
-                        // Update Status Antrian
-                        $record->update(['status' => 'Selesai']);
-                        
-                        // Update global pendaftaran status
-                        $record->pendaftaran->update(['status' => 'Menunggu Pembayaran']);
-                        
-                        // Ensure there is a cashier queue
-                        Antrian::firstOrCreate(
-                            [
-                                'pendaftaran_id' => $record->pendaftaran_id,
-                                'kategori' => 'Kasir',
-                            ],
-                            [
-                                'nomor_antrian' => Antrian::generateNomor('Kasir'),
-                                'status' => 'Menunggu',
-                            ]
-                        );
+                            // Update Status Antrian
+                            $record->update(['status' => 'Selesai']);
+                            
+                            // Update global pendaftaran status
+                            $record->pendaftaran->update(['status' => 'Menunggu Pembayaran']);
+                            
+                            // Ensure there is a cashier queue
+                            Antrian::firstOrCreate(
+                                [
+                                    'pendaftaran_id' => $record->pendaftaran_id,
+                                    'kategori' => 'Kasir',
+                                ],
+                                [
+                                    'nomor_antrian' => Antrian::generateNomor('Kasir'),
+                                    'status' => 'Menunggu',
+                                ]
+                            );
+                        });
 
                         Notification::make()
                             ->title('Obat berhasil diserahkan!')
