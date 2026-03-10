@@ -22,7 +22,7 @@
                             <span>No. RM: <strong>{{ $pasien->no_rm }}</strong></span>
                             <span>NIK: {{ $pasien->nik }}</span>
                             <span>{{ $pasien->tempat_lahir }}, {{ \Carbon\Carbon::parse($pasien->tanggal_lahir)->format('d/m/Y') }}</span>
-                            <span>{{ $pasien->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</span>
+                            <span>{{ $pasien->jenis_kelamin }}</span>
                         </div>
                     </div>
                 </div>
