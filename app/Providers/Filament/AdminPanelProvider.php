@@ -35,6 +35,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 'Pelayanan',
+                'Laporan',
                 'Data Master',
                 'Manajemen',
             ])

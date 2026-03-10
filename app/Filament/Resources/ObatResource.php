@@ -130,8 +130,8 @@ class ObatResource extends Resource
                     $record->increment('stok', $data['jumlah']);
                     
                     // Riwayat stok otomatis tercatat melalui ObatObserver
-                    // Tapi kita bisa update deskripsinya jika ingin lebih spesifik
-                    $record->stockHistories()->latest()->first()?->update([
+                    // Update deskripsi pada entri terakhir agar sesuai dengan input pengguna
+                    $record->stockHistories()->latest()->limit(1)->update([
                         'description' => $data['keterangan']
                     ]);
                     
