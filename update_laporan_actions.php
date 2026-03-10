@@ -1,33 +1,22 @@
 <?php
+$content = file_get_contents('app/Filament/Pages/Laporan.php');
 
-namespace App\Filament\Pages;
+// We'll replace the getCachedActions method entirely
+$newContent = preg_replace('/protected function getCachedActions\(\): array\s*\{\s*return \[(.*)\];\s*\}/s', '// REPLACED', $content);
 
-use Filament\Pages\Page;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Grid;
-use Filament\Actions\Action;
-use Filament\Notifications\Notification;
+// The regex above might be too brittle, let's use string manipulation
 
-class Laporan extends Page
-{
-    protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $navigationGroup = 'Laporan';
-    protected static ?string $title = 'Pusat Laporan';
-    protected static string $view = 'filament.pages.laporan';
+$startMarker = 'protected function getCachedActions(): array';
+$posStart = strpos($content, $startMarker);
+if ($posStart === false) {
+    echo "Marker not found\n";
+    exit;
+}
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('kepala_puskesmas') || auth()->user()->hasRole('petugas');
-    }
+$beforeFunction = substr($content, 0, $posStart);
 
-    protected function getHeaderActions(): array
-    {
-        return [];
-    }
-
-        public function cetakLplpoAction(): Action
+$newFunctions = <<<PHP
+    public function cetakLplpoAction(): Action
     {
         return Action::make('cetak_lplpo')
             ->label('LPLPO (Farmasi)')
@@ -45,11 +34,11 @@ class Laporan extends Page
                     ->required(),
                 Select::make('year')
                     ->label('Tahun')
-                    ->options(collect(range(now()->year - 2, now()->year + 1))->mapWithKeys(fn($y) => [$y => $y])->all())
+                    ->options(collect(range(now()->year - 2, now()->year + 1))->mapWithKeys(fn(\$y) => [\$y => \$y])->all())
                     ->default(now()->year)
                     ->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.lplpo', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.lplpo', \$data));
     }
 
     public function cetakLraAction(): Action
@@ -62,7 +51,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.lra', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.lra', \$data));
     }
 
     public function cetakKunjunganAction(): Action
@@ -75,7 +64,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.kunjungan', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.kunjungan', \$data));
     }
 
     public function cetakKunjunganPoliAction(): Action
@@ -88,7 +77,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.kunjungan_poli', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.kunjungan_poli', \$data));
     }
 
     public function cetakPasienBaruAction(): Action
@@ -101,7 +90,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.pasien_baru', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.pasien_baru', \$data));
     }
 
     public function cetakRekapTindakanAction(): Action
@@ -114,7 +103,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.rekap_tindakan', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.rekap_tindakan', \$data));
     }
 
     public function cetakStatistikLabAction(): Action
@@ -127,7 +116,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.statistik_lab', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.statistik_lab', \$data));
     }
 
     public function cetakPasienStatusAction(): Action
@@ -140,7 +129,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.pasien_status', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.pasien_status', \$data));
     }
 
     public function cetakObatExpiredAction(): Action
@@ -171,7 +160,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.pendapatan', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.pendapatan', \$data));
     }
 
     public function cetakDistribusiPenyakitAction(): Action
@@ -184,7 +173,7 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.distribusi_penyakit', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.distribusi_penyakit', \$data));
     }
 
     public function cetakLb1Action(): Action
@@ -197,6 +186,10 @@ class Laporan extends Page
                 DatePicker::make('start_date')->label('Dari Tanggal')->default(now()->startOfMonth())->required(),
                 DatePicker::make('end_date')->label('Sampai Tanggal')->default(now()->endOfMonth())->required(),
             ])
-            ->action(fn (array $data) => redirect()->route('laporan.lb1', $data));
+            ->action(fn (array \$data) => redirect()->route('laporan.lb1', \$data));
     }
-}
+PHP;
+
+file_put_contents('app/Filament/Pages/Laporan.php', $beforeFunction . $newFunctions . "\n}\n");
+echo "Updated Laporan.php\n";
+

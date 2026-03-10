@@ -46,7 +46,7 @@ class ReportController extends Controller
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
         
-        $data = Pembayaran::select('status_pembayaran', DB::raw('SUM(total_bayar) as total'))
+        $data = Pembayaran::select(['status_pembayaran', DB::raw('SUM(total_bayar) as total')])
             ->whereBetween('created_at', [$start, $end])
             ->groupBy('status_pembayaran')
             ->get();
@@ -69,7 +69,7 @@ class ReportController extends Controller
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
 
-        $kunjungans = Pendaftaran::select('jenis_pembayaran', DB::raw('COUNT(*) as total'))
+        $kunjungans = Pendaftaran::select(['jenis_pembayaran', DB::raw('COUNT(*) as total')])
             ->whereBetween('tanggal_daftar', [$start, $end])
             ->groupBy('jenis_pembayaran')
             ->get();
@@ -94,5 +94,152 @@ class ReportController extends Controller
 
         $pdf = Pdf::loadView('pdf.laporan-lb1', compact('penyakits', 'start', 'end'));
         return $pdf->stream("Laporan-LB1.pdf");
+    }
+
+    public function kunjunganPoli(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('pendaftaran')
+            ->join('poli', 'pendaftaran.poli_id', '=', 'poli.id')
+            ->select('poli.nama_poli as tujuan_poli', DB::raw('count(*) as total'))
+            ->whereBetween('pendaftaran.created_at', [$start, $end])
+            ->groupBy('poli.id', 'poli.nama_poli')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-kunjungan-poli', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Kunjungan-Poli.pdf");
+    }
+
+    public function kunjunganPasienBaru(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('pendaftaran')
+            ->select('jenis_kunjungan as status_pasien', DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('jenis_kunjungan')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-pasien-baru', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Kunjungan-Pasien-Baru.pdf");
+    }
+
+    public function rekapTindakan(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('rekam_medis_tindakan')
+            ->join('tindakans', 'rekam_medis_tindakan.tindakan_id', '=', 'tindakans.id')
+            ->join('rekam_medis', 'rekam_medis_tindakan.rekam_medis_id', '=', 'rekam_medis.id')
+            ->select('tindakans.nama_tindakan', DB::raw('count(*) as total'))
+            ->whereBetween('rekam_medis.created_at', [$start, $end])
+            ->groupBy('tindakans.id', 'tindakans.nama_tindakan')
+            ->orderBy('total', 'desc')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-rekap-tindakan', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Rekap-Tindakan.pdf");
+    }
+
+    public function statistikLab(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('rekam_medis')
+            ->whereNotNull('instruksi_lab')
+            ->whereBetween('created_at', [$start, $end])
+            ->select('instruksi_lab', DB::raw('count(*) as total'))
+            ->groupBy('instruksi_lab')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-statistik-lab', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Statistik-Lab.pdf");
+    }
+
+    public function pasienStatus(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('rekam_medis')
+            ->select('status_pulang', DB::raw('count(*) as total'))
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('status_pulang')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-pasien-status', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Status-Pasien.pdf");
+    }
+
+    public function obatExpired(Request $request)
+    {
+        $data = DB::table('obat')
+            ->whereNotNull('expired_at')
+            ->where('expired_at', '<=', now()->addMonths(3))
+            ->orderBy('expired_at', 'asc')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-obat-expired', compact('data'));
+        return $pdf->stream("Laporan-Obat-Expired.pdf");
+    }
+
+    public function obatAnalisa(Request $request)
+    {
+        // Analisa pemakaian obat 3 bulan terakhir untuk menentukan fast/slow moving
+        $start = now()->subMonths(3)->startOfMonth();
+        $end = now()->endOfMonth();
+
+        $data = DB::table('obat')
+            ->leftJoin('detail_resep', 'obat.id', '=', 'detail_resep.obat_id')
+            ->select('obat.nama_obat', 'obat.satuan', DB::raw('SUM(detail_resep.jumlah) as total_pakai'))
+            ->groupBy('obat.id', 'obat.nama_obat', 'obat.satuan')
+            ->orderBy('total_pakai', 'desc')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-obat-analisa', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Analisa-Obat.pdf");
+    }
+
+    public function pendapatanHarian(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('pembayaran')
+            ->select('metode_pembayaran', 'status_pembayaran', DB::raw('SUM(total_bayar) as total'))
+            ->whereBetween('created_at', [$start, $end])
+            ->groupBy('metode_pembayaran', 'status_pembayaran')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-pendapatan', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Pendapatan.pdf");
+    }
+
+    public function distribusiPenyakit(Request $request)
+    {
+        $start = $request->input('start_date', now()->startOfMonth());
+        $end = $request->input('end_date', now()->endOfMonth());
+
+        $data = DB::table('rekam_medis')
+            ->join('penyakit', 'rekam_medis.penyakit_id', '=', 'penyakit.id')
+            ->join('pendaftaran', 'rekam_medis.pendaftaran_id', '=', 'pendaftaran.id')
+            ->join('pasien', 'pendaftaran.pasien_id', '=', 'pasien.id')
+            ->select(
+                'penyakit.nama_penyakit',
+                'pasien.jenis_kelamin',
+                DB::raw('TIMESTAMPDIFF(YEAR, pasien.tanggal_lahir, rekam_medis.created_at) as umur'),
+                DB::raw('count(*) as total')
+            )
+            ->whereBetween('rekam_medis.created_at', [$start, $end])
+            ->groupBy('penyakit.id', 'penyakit.nama_penyakit', 'pasien.jenis_kelamin', 'umur')
+            ->get();
+
+        $pdf = Pdf::loadView('pdf.laporan-distribusi-penyakit', compact('data', 'start', 'end'));
+        return $pdf->stream("Laporan-Distribusi-Penyakit.pdf");
     }
 }
