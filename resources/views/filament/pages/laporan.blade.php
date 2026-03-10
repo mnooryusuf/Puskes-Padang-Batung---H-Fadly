@@ -12,7 +12,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakLplpoAction }}
+                {{ $this->getAction('cetak_lplpo') }}
             </div>
         </div>
 
@@ -28,7 +28,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakLraAction }}
+                {{ $this->getAction('cetak_lra') }}
             </div>
         </div>
 
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakKunjunganAction }}
+                {{ $this->getAction('cetak_kunjungan') }}
             </div>
         </div>
 
@@ -60,7 +60,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakKunjunganPoliAction }}
+                {{ $this->getAction('cetak_kunjungan_poli') }}
             </div>
         </div>
 
@@ -76,7 +76,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakPasienBaruAction }}
+                {{ $this->getAction('cetak_pasien_baru') }}
             </div>
         </div>
 
@@ -92,7 +92,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakRekapTindakanAction }}
+                {{ $this->getAction('cetak_rekap_tindakan') }}
             </div>
         </div>
 
@@ -108,7 +108,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakStatistikLabAction }}
+                {{ $this->getAction('cetak_statistik_lab') }}
             </div>
         </div>
 
@@ -124,7 +124,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakPasienStatusAction }}
+                {{ $this->getAction('cetak_pasien_status') }}
             </div>
         </div>
 
@@ -140,7 +140,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakObatExpiredAction }}
+                {{ $this->getAction('cetak_obat_expired') }}
             </div>
         </div>
 
@@ -156,7 +156,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakObatAnalisaAction }}
+                {{ $this->getAction('cetak_obat_analisa') }}
             </div>
         </div>
 
@@ -172,7 +172,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakPendapatanAction }}
+                {{ $this->getAction('cetak_pendapatan') }}
             </div>
         </div>
 
@@ -188,7 +188,7 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakDistribusiPenyakitAction }}
+                {{ $this->getAction('cetak_distribusi_penyakit') }}
             </div>
         </div>
 
@@ -204,8 +204,10 @@
                 </div>
             </div>
             <div class="mt-6">
-                {{ $this->cetakLb1Action }}
+                {{ $this->getAction('cetak_lb1') }}
             </div>
         </div>
     </div>
+
+    <x-filament-actions::modals />
 </x-filament-panels::page>

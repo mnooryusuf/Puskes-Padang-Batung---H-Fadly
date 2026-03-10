@@ -9,11 +9,17 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Grid;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 
-class Laporan extends Page
+class Laporan extends Page implements HasForms, HasActions
 {
+    use InteractsWithForms, InteractsWithActions;
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationGroup = 'Laporan';
+    protected static ?string $navigationLabel = 'Pusat Laporan';
     protected static ?string $title = 'Pusat Laporan';
     protected static string $view = 'filament.pages.laporan';
 
@@ -27,7 +33,7 @@ class Laporan extends Page
         return [];
     }
 
-        public function cetakLplpoAction(): Action
+    public function cetak_lplpoAction(): Action
     {
         return Action::make('cetak_lplpo')
             ->label('LPLPO (Farmasi)')
@@ -52,7 +58,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.lplpo', $data));
     }
 
-    public function cetakLraAction(): Action
+    public function cetak_lraAction(): Action
     {
         return Action::make('cetak_lra')
             ->label('LRA (Keuangan)')
@@ -65,7 +71,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.lra', $data));
     }
 
-    public function cetakKunjunganAction(): Action
+    public function cetak_kunjunganAction(): Action
     {
         return Action::make('cetak_kunjungan')
             ->label('Statistik Kunjungan')
@@ -78,7 +84,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.kunjungan', $data));
     }
 
-    public function cetakKunjunganPoliAction(): Action
+    public function cetak_kunjungan_poliAction(): Action
     {
         return Action::make('cetak_kunjungan_poli')
             ->label('Kunjungan per Poli')
@@ -91,7 +97,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.kunjungan_poli', $data));
     }
 
-    public function cetakPasienBaruAction(): Action
+    public function cetak_pasien_baruAction(): Action
     {
         return Action::make('cetak_pasien_baru')
             ->label('Pasien Baru vs Lama')
@@ -104,7 +110,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.pasien_baru', $data));
     }
 
-    public function cetakRekapTindakanAction(): Action
+    public function cetak_rekap_tindakanAction(): Action
     {
         return Action::make('cetak_rekap_tindakan')
             ->label('Rekap Tindakan Medis')
@@ -117,7 +123,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.rekap_tindakan', $data));
     }
 
-    public function cetakStatistikLabAction(): Action
+    public function cetak_statistik_labAction(): Action
     {
         return Action::make('cetak_statistik_lab')
             ->label('Statistik Lab')
@@ -130,7 +136,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.statistik_lab', $data));
     }
 
-    public function cetakPasienStatusAction(): Action
+    public function cetak_pasien_statusAction(): Action
     {
         return Action::make('cetak_pasien_status')
             ->label('Status Pulang/Rujuk')
@@ -143,7 +149,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.pasien_status', $data));
     }
 
-    public function cetakObatExpiredAction(): Action
+    public function cetak_obat_expiredAction(): Action
     {
         return Action::make('cetak_obat_expired')
             ->label('Obat Kadaluwarsa')
@@ -152,7 +158,7 @@ class Laporan extends Page
             ->action(fn () => redirect()->route('laporan.obat_expired'));
     }
 
-    public function cetakObatAnalisaAction(): Action
+    public function cetak_obat_analisaAction(): Action
     {
         return Action::make('cetak_obat_analisa')
             ->label('Analisa Fast/Slow Moving')
@@ -161,7 +167,7 @@ class Laporan extends Page
             ->action(fn () => redirect()->route('laporan.obat_analisa'));
     }
 
-    public function cetakPendapatanAction(): Action
+    public function cetak_pendapatanAction(): Action
     {
         return Action::make('cetak_pendapatan')
             ->label('Rekap Pendapatan Kasir')
@@ -174,7 +180,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.pendapatan', $data));
     }
 
-    public function cetakDistribusiPenyakitAction(): Action
+    public function cetak_distribusi_penyakitAction(): Action
     {
         return Action::make('cetak_distribusi_penyakit')
             ->label('Distribusi Penyakit (Umur/JK)')
@@ -187,7 +193,7 @@ class Laporan extends Page
             ->action(fn (array $data) => redirect()->route('laporan.distribusi_penyakit', $data));
     }
 
-    public function cetakLb1Action(): Action
+    public function cetak_lb1Action(): Action
     {
         return Action::make('cetak_lb1')
             ->label('LB1 (10 Besar Penyakit)')
