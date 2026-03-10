@@ -12,7 +12,7 @@ class Obat extends Model
 
     use HasFactory;
 
-    protected $fillable = ['nama_obat', 'sediaan', 'kemasan', 'satuan', 'stok', 'expired_at', 'harga_jual'];
+    protected $fillable = ['nama_obat', 'sediaan', 'kemasan', 'satuan', 'stok', 'stok_minimum', 'expired_at', 'harga_jual'];
 
     protected $casts = [
         'expired_at' => 'date',

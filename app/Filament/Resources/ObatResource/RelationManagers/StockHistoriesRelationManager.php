@@ -30,7 +30,7 @@ class StockHistoriesRelationManager extends RelationManager
             ->recordTitleAttribute('type')
             ->columns([
                 Tables\Columns\TextColumn::make('created_at')->label('Tanggal')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('type')->label('Tipe')->badge()->color(fn($state) => match($state){'Masuk'=>'success','Keluar'=>'danger','Penyesuaian'=>'warning'}),
+                Tables\Columns\TextColumn::make('type')->label('Tipe')->badge()->color(fn($state) => match($state){'Masuk','in'=>'success','Keluar','out'=>'danger','Penyesuaian'=>'warning', default => 'gray'}),
                 Tables\Columns\TextColumn::make('quantity')->label('Jumlah'),
                 Tables\Columns\TextColumn::make('stock_after')->label('Stok Akhir'),
                 Tables\Columns\TextColumn::make('description')->label('Keterangan'),

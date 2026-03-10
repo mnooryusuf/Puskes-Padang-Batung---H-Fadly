@@ -81,6 +81,7 @@ class ListPendaftarans extends ListRecords
                         ->options([
                             'Umum' => 'Umum',
                             'BPJS' => 'BPJS',
+                            'BOK' => 'BOK (Bantuan Operasional Kesehatan)',
                             'Lainnya' => 'Lainnya',
                         ])
                         ->default('Umum')

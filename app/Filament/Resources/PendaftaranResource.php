@@ -129,6 +129,7 @@ class PendaftaranResource extends Resource
                 ->options([
                     'Umum' => 'Umum',
                     'BPJS' => 'BPJS',
+                    'BOK' => 'BOK (Bantuan Operasional Kesehatan)',
                     'Lainnya' => 'Lainnya',
                 ])
                 ->default('Umum')

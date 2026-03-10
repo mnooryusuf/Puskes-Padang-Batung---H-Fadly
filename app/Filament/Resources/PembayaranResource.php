@@ -112,7 +112,7 @@ class PembayaranResource extends Resource
                             'Belum Lunas' => 'Belum Lunas',
                             'Lunas' => 'Lunas',
                             'Piutang' => 'Piutang (Klaim)',
-                            'Gratis' => 'Gratis (Kebijakan Pemda)',
+                            'Gratis' => 'Gratis (Kebijakan Pemda / BOK)',
                         ])
                         ->default('Belum Lunas')
                         ->required(),
@@ -120,6 +120,7 @@ class PembayaranResource extends Resource
                         ->options([
                             'Tunai' => 'Tunai',
                             'BPJS' => 'BPJS',
+                            'BOK' => 'BOK',
                             'QRIS' => 'QRIS / Non-Tunai',
                             'Transfer' => 'Transfer Bank',
                         ])

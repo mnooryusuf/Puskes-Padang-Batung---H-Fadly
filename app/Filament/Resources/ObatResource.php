@@ -14,6 +14,8 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\TextInput as FormsTextInput;
 use UnitEnum;
 
 class ObatResource extends Resource
@@ -81,6 +83,11 @@ class ObatResource extends Resource
                 ->prefix('Rp')
                 ->required()
                 ->helperText('Harga per 1 unit satuan terkecil'),
+            TextInput::make('stok_minimum')
+                ->numeric()
+                ->default(10)
+                ->required()
+                ->helperText('Batas stok untuk peringatan ketersediaan'),
             \Filament\Forms\Components\DatePicker::make('expired_at')->label('Tgl Kadaluwarsa'),
         ]);
     }
@@ -92,7 +99,10 @@ class ObatResource extends Resource
             TextColumn::make('sediaan')->badge()->color('gray'),
             TextColumn::make('kemasan')->searchable(),
             TextColumn::make('satuan'),
-            TextColumn::make('stok')->badge()->color(fn($state) => $state < 10 ? 'danger' : ($state < 20 ? 'warning' : 'success')),
+            TextColumn::make('stok')
+                ->badge()
+                ->color(fn($record) => $record->stok <= $record->stok_minimum ? 'danger' : ($record->stok <= $record->stok_minimum * 2 ? 'warning' : 'success'))
+                ->description(fn($record) => "Min: {$record->stok_minimum}"),
             TextColumn::make('expired_at')
                 ->label('Expired')
                 ->date()
@@ -101,6 +111,35 @@ class ObatResource extends Resource
                 ->sortable(),
             TextColumn::make('harga_jual')->label('Harga')->money('idr')->sortable(),
         ])->actions([
+            Action::make('tambah_stok')
+                ->label('Tambah Stok')
+                ->icon('heroicon-m-plus-circle')
+                ->color('success')
+                ->form([
+                    FormsTextInput::make('jumlah')
+                        ->label('Jumlah Tambahan')
+                        ->numeric()
+                        ->required()
+                        ->helperText('Gunakan angka positif untuk menambah, atau negatif jika ada pengurangan manual (koreksi).'),
+                    FormsTextInput::make('keterangan')
+                        ->label('Keterangan')
+                        ->placeholder('Contoh: Barang baru masuk / Hibah')
+                        ->required(),
+                ])
+                ->action(function (Obat $record, array $data) {
+                    $record->increment('stok', $data['jumlah']);
+                    
+                    // Riwayat stok otomatis tercatat melalui ObatObserver
+                    // Tapi kita bisa update deskripsinya jika ingin lebih spesifik
+                    $record->stockHistories()->latest()->first()?->update([
+                        'description' => $data['keterangan']
+                    ]);
+                    
+                    \Filament\Notifications\Notification::make()
+                        ->title('Stok Berhasil Ditambahkan')
+                        ->success()
+                        ->send();
+                }),
             EditAction::make(),
             DeleteAction::make(),
         ])->groupedBulkActions([

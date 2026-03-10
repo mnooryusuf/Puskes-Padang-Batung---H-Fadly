@@ -12,7 +12,7 @@ class ObatObserver
     public function created(Obat $obat): void
     {
         $obat->stockHistories()->create([
-            'type' => 'in',
+            'type' => 'Masuk',
             'quantity' => $obat->stok,
             'stock_after' => $obat->stok,
             'description' => 'Stok awal saat pendaftaran obat',
@@ -30,7 +30,7 @@ class ObatObserver
             $diff = $newStock - $oldStock;
 
             $obat->stockHistories()->create([
-                'type' => $diff > 0 ? 'in' : 'out',
+                'type' => $diff > 0 ? 'Masuk' : 'Keluar',
                 'quantity' => abs($diff),
                 'stock_after' => $newStock,
                 'description' => 'Perubahan stok',
