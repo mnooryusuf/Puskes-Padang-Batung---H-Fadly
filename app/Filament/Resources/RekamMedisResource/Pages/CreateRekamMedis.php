@@ -80,19 +80,40 @@ class CreateRekamMedis extends CreateRecord
     {
         $record = $this->record;
         $pendaftaran = $record->pendaftaran;
+        $statusPulang = $record->status_pulang;
 
         if ($pendaftaran) {
-            // Check if there is a prescription (saved via repeater)
-            // In afterCreate, relationship should be already processed by saveRelationships()
+            // Logika Khusus Meninggal Dunia
+            if ($statusPulang === 'Meninggal') {
+                // 1. Update master pasien
+                $pendaftaran->pasien->update(['status_hidup' => 'Meninggal']);
+
+                // 2. Set Status Pendaftaran
+                $pendaftaran->update(['status' => 'Selesai (Meninggal)']);
+
+                // 3. Langsung buat antrian Kasir (Bypass Apotek)
+                \App\Models\Antrian::firstOrCreate(
+                    [
+                        'pendaftaran_id' => $pendaftaran->id,
+                        'kategori' => 'Kasir',
+                    ],
+                    [
+                        'nomor_antrian' => '⚠️ PRIORITAS - KEMATIAN',
+                        'status' => 'Menunggu',
+                    ]
+                );
+
+                return;
+            }
+
+            // Alur Normal (Cek Resep)
             $hasResep = $record->resep()->exists();
             
             if ($hasResep) {
                 $pendaftaran->update(['status' => 'Menunggu Obat']);
-                // Antrian Obat is already created by Resep model's booted event
             } else {
                 $pendaftaran->update(['status' => 'Menunggu Pembayaran']);
                 
-                // Create Antrian Kasir record since no Resep will trigger it
                 \App\Models\Antrian::firstOrCreate(
                     [
                         'pendaftaran_id' => $pendaftaran->id,

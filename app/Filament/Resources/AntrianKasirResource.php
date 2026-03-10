@@ -45,7 +45,7 @@ class AntrianKasirResource extends Resource
                 TextColumn::make('nomor_antrian')
                     ->label('No. Antrian')
                     ->badge()
-                    ->color('success'),
+                    ->color(fn (string $state): string => str_contains($state, 'PRIORITAS') ? 'danger' : 'success'),
                 TextColumn::make('pendaftaran.pasien.no_rm')
                     ->label('No. RM')
                     ->searchable()

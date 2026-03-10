@@ -34,7 +34,7 @@ class PendaftaranResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Select::make('pasien_id')->relationship('pasien', 'nama_pasien')
+            Select::make('pasien_id')->relationship('pasien', 'nama_pasien', fn ($query) => $query->where('status_hidup', 'Hidup'))
                 ->getOptionLabelFromRecordUsing(fn ($record) => "[{$record->no_rm}] {$record->nama_pasien}")
                 ->searchable()->preload()->createOptionForm([
                 TextInput::make('no_rm')

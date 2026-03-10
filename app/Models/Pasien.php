@@ -27,7 +27,8 @@ class Pasien extends Model
         'no_hp', 
         'cara_bayar',
         'no_bpjs',
-        'user_id'
+        'user_id',
+        'status_hidup'
     ];
 
     public static function generateNoRm(): string
