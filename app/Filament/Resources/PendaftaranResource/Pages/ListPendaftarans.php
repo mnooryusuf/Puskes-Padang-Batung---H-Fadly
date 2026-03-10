@@ -119,7 +119,7 @@ class ListPendaftarans extends ListRecords
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Filament\Resources\PendaftaranResource\Widgets\JadwalDokterWidget::class,
+            \App\Filament\Widgets\SharedJadwalDokterWidget::class,
         ];
     }
 }

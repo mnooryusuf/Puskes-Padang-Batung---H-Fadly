@@ -124,6 +124,13 @@ class DaftarMandiri extends Page implements HasForms
             ->success()
             ->send();
 
-        $this->redirect(PasienDashboard::getUrl());
+        $this->redirect(\App\Filament\Pages\PasienDashboard::getUrl());
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\SharedJadwalDokterWidget::class,
+        ];
     }
 }

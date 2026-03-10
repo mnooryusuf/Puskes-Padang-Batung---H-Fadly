@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Filament\Resources\PendaftaranResource\Widgets;
+namespace App\Filament\Widgets;
 
 use App\Models\JadwalDokter;
 use App\Models\Pendaftaran;
 use Carbon\Carbon;
 use Filament\Widgets\Widget;
 
-class JadwalDokterWidget extends Widget
+class SharedJadwalDokterWidget extends Widget
 {
-    protected static string $view = 'filament.resources.pendaftaran-resource.widgets.jadwal-dokter-widget';
+    protected static string $view = 'filament.widgets.shared-jadwal-dokter-widget';
     protected int | string | array $columnSpan = 'full';
 
     public function getJadwalHariIni()
@@ -21,21 +21,6 @@ class JadwalDokterWidget extends Widget
             ->where('hari', $hariIni)
             ->where('is_active', true)
             ->get();
-
-        $data = [];
-
-        foreach ($jadwals as $jadwal) {
-            $poliName = $jadwal->dokter->poli->nama_poli ?? 'Tanpa Poli';
-            $poliId = $jadwal->dokter->poli_id;
-
-            $terdaftar = Pendaftaran::whereDate('tanggal_daftar', $tanggalSekarang)
-                ->where('poli_id', $poliId)
-                ->count();
-            
-            // Karena pendaftaran berdasarkan Poli, kita asumsikan kuota di widget ini 
-            // menunjukan kuota per dokter, tapi terdaftarnya per poli.
-            // Untuk lebih jelas, mari kumpulkan berdasarkan Poli.
-        }
 
         // Kumpulkan berdasarkan Poli
         $polis = [];
