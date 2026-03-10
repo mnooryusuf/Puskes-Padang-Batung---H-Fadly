@@ -63,7 +63,10 @@ class PendaftaranResource extends Resource
                 ])
                 ->required()
                 ->label('Jenis Kunjungan'),
-            DatePicker::make('tanggal_daftar')->default(now())->required(),
+            \Filament\Forms\Components\DatePicker::make('tanggal_daftar')
+                ->default(now())
+                ->required()
+                ->live(), // Added live to trigger updates
             Select::make('poli_id')
                 ->relationship('poli', 'nama_poli')
                 ->required()
@@ -71,7 +74,48 @@ class PendaftaranResource extends Resource
                 ->preload()
                 ->live()
                 ->afterStateUpdated(fn ($state, callable $set) => $set('no_antrian', $state ? Pendaftaran::generateNoAntrian($state) : null))
-                ->label('Poli'),
+                ->label('Poli')
+                ->helperText(function (callable $get) {
+                    $poliId = $get('poli_id');
+                    $tanggal = $get('tanggal_daftar');
+                    
+                    if (!$poliId || !$tanggal) return null;
+                    
+                    $hari = \Carbon\Carbon::parse($tanggal)->locale('id')->isoFormat('dddd');
+                    
+                    $jadwals = \App\Models\JadwalDokter::with('dokter')
+                        ->whereHas('dokter', fn($q) => $q->where('poli_id', $poliId))
+                        ->where('hari', $hari)
+                        ->where('is_active', true)
+                        ->get();
+                        
+                    if ($jadwals->isEmpty()) {
+                        return \Illuminate\Support\HtmlString::fromHtml('<span class="text-danger-500 font-medium">⚠️ Tidak ada jadwal dokter untuk poli ini pada tanggal terpilih.</span>');
+                    }
+                    
+                    $totalKuota = $jadwals->sum('kuota');
+                    $terdaftar = \App\Models\Pendaftaran::whereDate('tanggal_daftar', $tanggal)
+                        ->where('poli_id', $poliId)
+                        ->count();
+                    $sisa = max(0, $totalKuota - $terdaftar);
+                    
+                    $listDokter = $jadwals->map(function($j) {
+                        return "• {$j->dokter->nama_dokter} ({$j->jam_mulai} - {$j->jam_selesai})";
+                    })->implode('<br>');
+                    
+                    $colorClass = $sisa > 0 ? 'text-success-600' : 'text-danger-600';
+                    $statusQuota = $sisa > 0 ? "Sisa Kuota: {$sisa} dari {$totalKuota}" : "⚠️ Kuota Penuh ({$totalKuota})";
+                    
+                    return \Illuminate\Support\HtmlString::fromHtml("
+                        <div class='mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>
+                            <div class='font-medium {$colorClass} mb-1'>{$statusQuota}</div>
+                            <div class='text-sm text-gray-600 dark:text-gray-400'>
+                                <strong>Dokter Bertugas ({$hari}):</strong><br>
+                                {$listDokter}
+                            </div>
+                        </div>
+                    ");
+                }),
             Select::make('jenis_pembayaran')
                 ->options([
                     'Umum' => 'Umum',

@@ -99,4 +99,11 @@ class ListPendaftarans extends ListRecords
                 ->modalWidth('lg'),
         ];
     }
+    
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            \App\Filament\Resources\PendaftaranResource\Widgets\JadwalDokterWidget::class,
+        ];
+    }
 }
