@@ -51,7 +51,7 @@ class Pendaftaran extends Model
 
     public function rekamMedis(): HasOne
     {
-        return $this->hasOne(RekamMedis::class);
+        return $this->hasOne(RekamMedis::class)->latestOfMany();
     }
 
     public function pembayaran(): HasOne

@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\AntrianResource\Pages;
+namespace App\Filament\Resources\TindakanResource\Pages;
 
-use App\Filament\Resources\AntrianResource;
+use App\Filament\Resources\TindakanResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
 
-class ListAntrians extends ListRecords
+class ListTindakans extends ListRecords
 {
-    protected static string $resource = AntrianResource::class;
+    protected static string $resource = TindakanResource::class;
 
     protected function getHeaderActions(): array
     {

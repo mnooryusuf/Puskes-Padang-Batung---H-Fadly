@@ -67,7 +67,8 @@ class RekamMedisResource extends Resource
                             if (!$pendaftaran) return 'Data pendaftaran tidak ditemukan.';
 
                             $pasienId = $pendaftaran->pasien_id;
-                            $history = RekamMedis::whereHas('pendaftaran', fn ($q) => $q->where('pasien_id', $pasienId))
+                            $history = RekamMedis::with(['penyakit', 'tindakans', 'resep.detailReseps.obat'])
+                                ->whereHas('pendaftaran', fn ($q) => $q->where('pasien_id', $pasienId))
                                 ->orderBy('created_at', 'desc')
                                 ->get();
 
@@ -88,14 +89,29 @@ class RekamMedisResource extends Resource
                             foreach ($history as $item) {
                                 $date = $item->created_at->format('d/m/Y H:i');
                                 $diagnosis = "({$item->penyakit?->kode}) {$item->penyakit?->nama_penyakit}";
-                                $tindakan = $item->tindakan;
+                                
+                                // Gabungkan daftar tindakan pivot
+                                $tindakanList = "";
+                                if ($item->tindakans->isNotEmpty()) {
+                                    $tindakanList = collect($item->tindakans)->map(fn($t) => "• {$t->nama_tindakan} ({$t->pivot->jumlah}x)")->implode('<br>');
+                                }
+                                
+                                // Gabungkan daftar obat resep
+                                $resepList = "";
+                                if ($item->resep && $item->resep->detailReseps->isNotEmpty()) {
+                                    $resepList = collect($item->resep->detailReseps)->map(fn($d) => "💊 {$d->obat->nama_obat} ({$d->jumlah}) - {$d->dosis}")->implode('<br>');
+                                }
+
+                                $gabunganTerapi = $tindakanList . ($tindakanList && $resepList ? '<br><hr class="my-1 border-gray-300 dark:border-gray-600">' : '') . $resepList;
+                                $gabunganTerapi = $gabunganTerapi ?: '-';
+
                                 $status = $item->status_pulang;
                                 $url = \App\Filament\Resources\RekamMedisResource::getUrl('view', ['record' => $item]);
 
                                     $html .= '<tr class="border border-gray-200 dark:border-gray-700">
                                     <td class="p-2">' . $date . '</td>
                                     <td class="p-2">' . $diagnosis . '</td>
-                                    <td class="p-2">' . $tindakan . '</td>
+                                    <td class="p-2">' . $gabunganTerapi . '</td>
                                     <td class="p-2">' . $status . '</td>
                                     <td class="p-2">
                                         <button type="button" 
@@ -146,47 +162,90 @@ class RekamMedisResource extends Resource
                         ->numeric()
                         ->suffix('°C'),
                     TextInput::make('nadi')
-                        ->label('Nadi')
+                        ->label('Denyut Nadi')
                         ->numeric()
-                        ->suffix('x/menit'),
+                        ->suffix('x/mnt'),
                     TextInput::make('respirasi')
                         ->label('Respirasi')
                         ->numeric()
-                        ->suffix('x/menit'),
+                        ->suffix('x/mnt'),
                 ]),
             ]),
 
-            Section::make('4. Diagnosis ( ICD-10 )')->schema([
+            Section::make('4. Diagnosis & Tindakan')->schema([
                 Select::make('penyakit_id')
-                    ->label('Diagnosis (ICD-10)')
                     ->relationship('penyakit', 'nama_penyakit')
                     ->getOptionLabelFromRecordUsing(fn($record) => "({$record->kode}) {$record->nama_penyakit}")
                     ->searchable(['kode', 'nama_penyakit'])
                     ->preload()
-                    ->required(),
+                    ->label('Diagnosis (ICD-10)'),
                 Select::make('tipe_diagnosis')
                     ->options([
-                        'Primer' => 'Primer (Utama)',
-                        'Sekunder' => 'Sekunder (Penyerta)',
+                        'Primer' => 'Diagnosis Primer',
+                        'Sekunder' => 'Diagnosis Sekunder',
                     ])
-                    ->required()
                     ->default('Primer'),
-                Textarea::make('diagnosa')
-                    ->label('Keterangan Diagnosis Tambahan')
-                    ->rows(2),
-            ])->columns(2),
+                
+                // Tambahan: Multi-select Tindakan / BHP (yang ada harganya)
+                Repeater::make('tindakans')
+                    ->relationship('tindakans') // Kembali menggunakan BelongsToMany (tindakans), BUKAN Model pivot
+                    ->label('Input Tagihan Tindakan / Pemeriksaan / BHP')
+                    ->schema([
+                        Select::make('tindakan_id')
+                            ->label('Nama Tindakan / Layanan')
+                            ->options(\App\Models\Tindakan::where('is_active', true)->pluck('nama_tindakan', 'id'))
+                            ->searchable()
+                            ->preload()
+                            ->disableOptionWhen(function ($value, $state, \Filament\Forms\Get $get) {
+                                return collect($get('../../tindakans'))->pluck('tindakan_id')->contains($value);
+                            })
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, $state) {
+                                if ($state) {
+                                    $tindakan = \App\Models\Tindakan::find($state);
+                                    if ($tindakan) {
+                                        $set('harga_snapshot', $tindakan->harga);
+                                    }
+                                }
+                            })
+                            ->required(),
+                        TextInput::make('jumlah')
+                            ->numeric()
+                            ->default(1)
+                            ->required()
+                            ->minValue(1),
+                    ])
+                    ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
+                        return $data;
+                    })
+                    ->mutateRelationshipDataBeforeSaveUsing(function (array $data): array {
+                        // Tidak ada yang dilakukan di sini karena kita matikan dehydration, sync logic manual akan kita jalankan setelah create parent
+                        return $data;
+                    })
+                    ->saveRelationshipsUsing(function (\Illuminate\Database\Eloquent\Model $record, array $state) {
+                        $syncData = [];
+                        foreach ($state as $item) {
+                            if (!empty($item['tindakan_id'])) {
+                                $syncData[$item['tindakan_id']] = [
+                                    'jumlah' => $item['jumlah'] ?? 1,
+                                    'harga_snapshot' => $item['harga_snapshot'] ?? 0,
+                                ];
+                            }
+                        }
+                        $record->tindakans()->sync($syncData);
+                    })
+                    ->dehydrated(false)
+                    ->columns(2)
+                    ->addActionLabel('Tambah Tindakan'),
+            ]),
 
-            Section::make('5. Rencana Terapi (Resep & Tindakan)')->schema([
-                Textarea::make('tindakan')
-                    ->label('Tindakan Medis')
-                    ->placeholder('Contoh: Hecting 3 jahitan, Injeksi, dll')
-                    ->rows(2),
+            Section::make('5. Rencana Terapi (Resep)')->schema([
                 Textarea::make('instruksi_lab')
                     ->label('Instruksi Laboratorium')
                     ->placeholder('Permintaan pemeriksaan darah, dll')
                     ->rows(2),
                 
-                \Filament\Forms\Components\HasManyRepeater::make('resep')
+                Repeater::make('resep')
                     ->label('E-Resep / Obat')
                     ->relationship('resep')
                     ->schema([

@@ -60,13 +60,42 @@ class PembayaranResource extends Resource
                                 }
                             }
                             $set('biaya_obat', $biayaObat);
-                            $set('biaya_tindakan', 0);
-                            $set('biaya_penunjang', 0);
-                            $set('biaya_bhp', 0);
-                            $set('biaya_tambahan', 0);
+                            $set('biaya_obat', $biayaObat);
 
-                            // 3. Update Total
-                            $total = $biayaReg + $biayaKon + $biayaObat;
+                            // 3. Hitung Biaya Tindakan, Penunjang, BHP, Tambahan
+                            $biayaTindakan = 0;
+                            $biayaPenunjang = 0;
+                            $biayaBhp = 0;
+                            $biayaTambahan = 0;
+
+                            if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->tindakans) {
+                                foreach ($pendaftaran->rekamMedis->tindakans as $tindakan) {
+                                    $subtotal = ($tindakan->pivot->harga_snapshot ?? $tindakan->harga) * $tindakan->pivot->jumlah;
+                                    
+                                    switch ($tindakan->kategori) {
+                                        case 'Tindakan':
+                                            $biayaTindakan += $subtotal;
+                                            break;
+                                        case 'Penunjang':
+                                            $biayaPenunjang += $subtotal;
+                                            break;
+                                        case 'BHP':
+                                            $biayaBhp += $subtotal;
+                                            break;
+                                        default:
+                                            $biayaTambahan += $subtotal;
+                                            break;
+                                    }
+                                }
+                            }
+
+                            $set('biaya_tindakan', $biayaTindakan);
+                            $set('biaya_penunjang', $biayaPenunjang);
+                            $set('biaya_bhp', $biayaBhp);
+                            $set('biaya_tambahan', $biayaTambahan);
+
+                            // 4. Update Total
+                            $total = $biayaReg + $biayaKon + $biayaObat + $biayaTindakan + $biayaPenunjang + $biayaBhp + $biayaTambahan;
                             $set('total_bayar', $total);
                         })
                         ->label('Pasien / Antrian'),

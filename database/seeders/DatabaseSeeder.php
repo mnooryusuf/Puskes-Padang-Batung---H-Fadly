@@ -265,6 +265,26 @@ class DatabaseSeeder extends Seeder
         }
 
         // =============================================
+        // X. TINDAKAN MEDIS & PENUNJANG (NEW)
+        // =============================================
+        $tindakans = [
+            ['nama_tindakan' => 'Jahit Luka Kecil (1-3 Jahitan)', 'kategori' => 'Tindakan', 'harga' => 50000, 'is_active' => true],
+            ['nama_tindakan' => 'Jahit Luka Besar (>3 Jahitan)', 'kategori' => 'Tindakan', 'harga' => 100000, 'is_active' => true],
+            ['nama_tindakan' => 'Cabut Gigi Anak', 'kategori' => 'Tindakan', 'harga' => 50000, 'is_active' => true],
+            ['nama_tindakan' => 'Cabut Gigi Dewasa', 'kategori' => 'Tindakan', 'harga' => 100000, 'is_active' => true],
+            ['nama_tindakan' => 'Pembersihan Karang Gigi (Scaling)', 'kategori' => 'Tindakan', 'harga' => 150000, 'is_active' => true],
+            ['nama_tindakan' => 'Cek Gula Darah', 'kategori' => 'Penunjang', 'harga' => 20000, 'is_active' => true],
+            ['nama_tindakan' => 'Cek Asam Urat', 'kategori' => 'Penunjang', 'harga' => 25000, 'is_active' => true],
+            ['nama_tindakan' => 'Cek Kolesterol', 'kategori' => 'Penunjang', 'harga' => 30000, 'is_active' => true],
+            ['nama_tindakan' => 'Nebulizer (Uap)', 'kategori' => 'Tindakan', 'harga' => 50000, 'is_active' => true],
+            ['nama_tindakan' => 'Kassa Steril + Verban', 'kategori' => 'BHP', 'harga' => 15000, 'is_active' => true],
+        ];
+
+        foreach ($tindakans as $t) {
+            \App\Models\Tindakan::create($t);
+        }
+
+        // =============================================
         // 7. PENYAKIT (ICD-10 umum Puskesmas)
         // =============================================
         $penyakits = [
@@ -301,6 +321,7 @@ class DatabaseSeeder extends Seeder
         echo "   - Jadwal: " . JadwalDokter::count() . "\n";
         echo "   - Pasien: " . Pasien::count() . "\n";
         echo "   - Obat: " . Obat::count() . "\n";
+        echo "   - Tindakan: " . \App\Models\Tindakan::count() . "\n";
         echo "   - Penyakit: " . Penyakit::count() . "\n";
     }
 }
