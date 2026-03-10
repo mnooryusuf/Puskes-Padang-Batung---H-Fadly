@@ -33,9 +33,9 @@ class PasienResource extends Resource
     }
     protected static ?string $pluralModelLabel = 'Pasien';
 
-    public static function form(Form $form): Form
+    public static function getFormSchema(): array
     {
-        return $form->schema([
+        return [
             Section::make('Identitas Demografi Pasien')->schema([
                 TextInput::make('no_rm')
                     ->label('No. RM')
@@ -59,11 +59,14 @@ class PasienResource extends Resource
                         ->required(),
                     DatePicker::make('tanggal_lahir')
                         ->label('Tanggal Lahir')
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->closeOnDateSelection()
                         ->required(),
                 ]),
                 Select::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
-                    ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])
+                    ->options(['Laki-laki' => 'Laki-laki', 'Perempuan' => 'Perempuan'])
                     ->required(),
                 TextInput::make('no_hp')
                     ->label('Nomor HP')
@@ -114,7 +117,12 @@ class PasienResource extends Resource
                     ->label('Informasi Akun')
                     ->content('Akun login pasien akan dibuat otomatis menggunakan No. RM sebagai username dan password default "Puskes[No. RM]".'),
             ])->visible(fn($operation) => $operation === 'create'),
-        ]);
+        ];
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema(self::getFormSchema());
     }
 
     public static function table(Table $table): Table
