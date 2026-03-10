@@ -178,12 +178,14 @@ class RekamMedisResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn($record) => "({$record->kode}) {$record->nama_penyakit}")
                     ->searchable(['kode', 'nama_penyakit'])
                     ->preload()
+                    ->required()
                     ->label('Diagnosis (ICD-10)'),
                 Select::make('tipe_diagnosis')
                     ->options([
                         'Primer' => 'Diagnosis Primer',
                         'Sekunder' => 'Diagnosis Sekunder',
                     ])
+                    ->required()
                     ->default('Primer'),
                 
                 // Tambahan: Multi-select Tindakan / BHP (yang ada harganya)
@@ -193,7 +195,9 @@ class RekamMedisResource extends Resource
                     ->schema([
                         Select::make('tindakan_id')
                             ->label('Nama Tindakan / Layanan')
-                            ->options(\App\Models\Tindakan::where('is_active', true)->pluck('nama_tindakan', 'id'))
+                            ->options(\App\Models\Tindakan::where('is_active', true)
+                                ->where('kategori', '!=', 'Penunjang') // Filter agar tidak duplikat dengan section lab
+                                ->pluck('nama_tindakan', 'id'))
                             ->searchable()
                             ->preload()
                             ->disableOptionWhen(function ($value, $state, \Filament\Forms\Get $get) {
@@ -222,8 +226,10 @@ class RekamMedisResource extends Resource
                         // Tidak ada yang dilakukan di sini karena kita matikan dehydration, sync logic manual akan kita jalankan setelah create parent
                         return $data;
                     })
-                    ->saveRelationshipsUsing(function (\Illuminate\Database\Eloquent\Model $record, array $state) {
+                    ->saveRelationshipsUsing(function (\Illuminate\Database\Eloquent\Model $record, array $state, \Filament\Forms\Get $get) {
                         $syncData = [];
+                        
+                        // 1. Ambil data dari repeater tindakan umum
                         foreach ($state as $item) {
                             if (!empty($item['tindakan_id'])) {
                                 $syncData[$item['tindakan_id']] = [
@@ -232,6 +238,19 @@ class RekamMedisResource extends Resource
                                 ];
                             }
                         }
+
+                        // 2. Ambil data dari pilihan laboratorium terstruktur
+                        $labItems = $get('lab_layanan_ids') ?? [];
+                        foreach ($labItems as $labId) {
+                            $tindakanLab = \App\Models\Tindakan::find($labId);
+                            if ($tindakanLab) {
+                                $syncData[$labId] = [
+                                    'jumlah' => 1,
+                                    'harga_snapshot' => $tindakanLab->harga,
+                                ];
+                            }
+                        }
+
                         $record->tindakans()->sync($syncData);
                     })
                     ->dehydrated(false)
@@ -239,11 +258,26 @@ class RekamMedisResource extends Resource
                     ->addActionLabel('Tambah Tindakan'),
             ]),
 
-            Section::make('5. Rencana Terapi (Resep)')->schema([
+            Section::make('5. Permintaan Laboratorium & Terapi')->schema([
+                \Filament\Forms\Components\CheckboxList::make('lab_layanan_ids')
+                    ->label('Pilih Pemeriksaan Laboratorium (Pemeriksaan Penunjang)')
+                    ->options(\App\Models\Tindakan::where('kategori', 'Penunjang')->where('is_active', true)->pluck('nama_tindakan', 'id'))
+                    ->columns(3)
+                    ->dehydrated(false)
+                    ->afterStateHydrated(function ($set, $record) {
+                        if ($record) {
+                            $set('lab_layanan_ids', $record->tindakans()->where('kategori', 'Penunjang')->pluck('tindakan_id')->toArray());
+                        }
+                    }),
+                
                 Textarea::make('instruksi_lab')
-                    ->label('Instruksi Laboratorium')
-                    ->placeholder('Permintaan pemeriksaan darah, dll')
+                    ->label('Catatan Tambahan untuk Laboratorium')
+                    ->placeholder('Contoh: Puasa dari jam 10 malam, dll')
                     ->rows(2),
+                
+                \Filament\Forms\Components\Placeholder::make('divider')
+                    ->label('')
+                    ->content(new \Illuminate\Support\HtmlString('<hr class="border-gray-300 dark:border-gray-600">')),
                 
                 Repeater::make('resep')
                     ->label('E-Resep / Obat')
