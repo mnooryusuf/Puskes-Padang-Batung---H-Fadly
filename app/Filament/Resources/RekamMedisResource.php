@@ -260,10 +260,13 @@ class RekamMedisResource extends Resource
             ]),
 
             Section::make('5. Permintaan Laboratorium & Terapi')->schema([
-                \Filament\Forms\Components\CheckboxList::make('lab_layanan_ids')
+                Select::make('lab_layanan_ids')
                     ->label('Pilih Pemeriksaan Laboratorium (Pemeriksaan Penunjang)')
                     ->options(\App\Models\Tindakan::where('kategori', 'Penunjang')->where('is_active', true)->pluck('nama_tindakan', 'id'))
-                    ->columns(3)
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->default([])
                     ->dehydrated(false)
                     ->afterStateHydrated(function ($set, $record) {
                         if ($record) {
