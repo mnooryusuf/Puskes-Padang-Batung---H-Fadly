@@ -52,8 +52,17 @@ class PendaftaranResource extends Resource
             ->live()
             ->afterStateUpdated(function ($state, callable $set) {
                 if ($state) {
-                    $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
-                    $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
+                    $pasien = Pasien::find($state);
+                    if ($pasien) {
+                        $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
+                        $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
+                        $set('no_bpjs', $pasien->no_bpjs);
+                        
+                        // Jika pasien punya no_bpjs, otomatis set jenis_pembayaran ke BPJS (opsional, tapi memudahkan)
+                        if ($pasien->no_bpjs) {
+                            $set('jenis_pembayaran', 'BPJS');
+                        }
+                    }
                 }
             }),
             Select::make('jenis_kunjungan')
@@ -124,7 +133,20 @@ class PendaftaranResource extends Resource
                 ])
                 ->default('Umum')
                 ->required()
+                ->live()
                 ->label('Jenis Pembayaran'),
+            
+            TextInput::make('no_bpjs')
+                ->label('Nomor Kartu BPJS')
+                ->placeholder('Ambil otomatis dari data pasien...')
+                ->helperText('Jika diisi/diubah, akan mengupdate data master pasien.')
+                ->visible(fn ($get) => $get('jenis_pembayaran') === 'BPJS')
+                ->afterStateHydrated(function ($set, $get, $record) {
+                    if ($record && $record->pasien) {
+                        $set('no_bpjs', $record->pasien->no_bpjs);
+                    }
+                }),
+
             TextInput::make('no_antrian')
                 ->numeric()
                 ->required()

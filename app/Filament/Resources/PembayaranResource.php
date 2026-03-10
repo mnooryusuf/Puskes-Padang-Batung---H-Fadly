@@ -188,7 +188,12 @@ class PembayaranResource extends Resource
         $set('biaya_bhp', $biayaBhp);
         $set('biaya_tambahan', $biayaTambahan);
 
-        // 4. Update Total
+        // 4. Update BPJS No if available
+        if ($pendaftaran->pasien && $pendaftaran->pasien->no_bpjs) {
+            $set('nomor_kartu_bpjs', $pendaftaran->pasien->no_bpjs);
+        }
+
+        // 5. Update Total
         $total = $biayaReg + $biayaKon + $biayaObat + $biayaTindakan + $biayaPenunjang + $biayaBhp + $biayaTambahan;
         $set('total_bayar', $total);
     }
