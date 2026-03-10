@@ -36,9 +36,9 @@ class ListPendaftarans extends ListRecords
                         ->live()
                         ->afterStateUpdated(function ($state, callable $set) {
                             if ($state) {
-                                $pasien = Pasien::find($state);
+                                $pasien = Pasien::find($state, ['*']);
                                 if ($pasien) {
-                                    $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
+                                    $hasHistory = Pendaftaran::where('pasien_id', '=', $state)->exists();
                                     $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
                                     $set('no_bpjs', $pasien->no_bpjs);
                                     if ($pasien->no_bpjs) {
@@ -95,7 +95,7 @@ class ListPendaftarans extends ListRecords
 
                     // Update BPJS data on Pasien if filled
                     if ($data['pasien_id'] && $noBpjs) {
-                        $pasien = Pasien::find($data['pasien_id']);
+                        $pasien = Pasien::find($data['pasien_id'], ['*']);
                         if ($pasien) {
                             $pasien->update([
                                 'no_bpjs' => $noBpjs,

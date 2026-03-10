@@ -334,7 +334,7 @@ class RekamMedisResource extends Resource
                                         return null;
                                     }),
                             ])->columns(4)->required(),
-                    ])->disableItemCreation(),
+                    ])->addable(false),
             ]),
 
             Section::make('6. Kondisi Akhir & Pemulangan')->schema([

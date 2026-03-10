@@ -41,9 +41,9 @@ class PendaftaranResource extends Resource
             ->live()
             ->afterStateUpdated(function ($state, callable $set) {
                 if ($state) {
-                    $pasien = Pasien::find($state);
+                    $pasien = Pasien::find($state, ['*']);
                     if ($pasien) {
-                        $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
+                        $hasHistory = Pendaftaran::where('pasien_id', '=', $state)->exists();
                         $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
                         $set('no_bpjs', $pasien->no_bpjs);
                         
@@ -92,7 +92,7 @@ class PendaftaranResource extends Resource
                     }
                     
                     $totalKuota = $jadwals->sum('kuota');
-                    $terdaftar = Pendaftaran::whereDate('tanggal_daftar', $tanggal)
+                    $terdaftar = Pendaftaran::whereDate('tanggal_daftar', '=', $tanggal)
                         ->where('poli_id', $poliId)
                         ->count();
                     $sisa = max(0, $totalKuota - $terdaftar);

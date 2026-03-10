@@ -31,7 +31,7 @@ class PrintController extends Controller
         $items = $resep->detailReseps;
         
         $pdf = Pdf::loadView('pdf.etiket-obat', compact('pasien', 'items'))
-            ->setPaper([0, 0, 150, 100], 'portrait');
+            ->setPaper([0, 0, 141.73, 85.04], 'portrait'); // 50mm x 30mm in points
             
         return $pdf->stream("Etiket-{$resep->id}.pdf");
     }
