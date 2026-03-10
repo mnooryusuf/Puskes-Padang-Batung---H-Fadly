@@ -22,9 +22,6 @@ class CreatePembayaran extends CreateRecord
             $this->form->fill([
                 'pendaftaran_id' => (int) $pendaftaranId,
             ]);
-
-            // Trigger the afterStateUpdated logic to auto-calculate costs
-            $this->form->getState();
         }
     }
 

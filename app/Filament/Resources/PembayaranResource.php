@@ -40,64 +40,8 @@ class PembayaranResource extends Resource
                         ->preload()
                         ->required()
                         ->live()
-                        ->afterStateUpdated(function ($state, Forms\Set $set) {
-                            if (!$state) return;
-                            
-                            $pendaftaran = \App\Models\Pendaftaran::with(['poli', 'rekamMedis.resep.detailReseps.obat'])->find($state);
-                            if (!$pendaftaran) return;
-
-                            // 1. Biaya Pendaftaran & Konsultasi dari Poli
-                            $biayaReg = $pendaftaran->poli->biaya_registrasi ?? 0;
-                            $biayaKon = $pendaftaran->poli->biaya_konsultasi ?? 0;
-
-                            $set('biaya_pendaftaran', $biayaReg);
-                            $set('biaya_konsultasi', $biayaKon);
-                            // 2. Hitung Biaya Obat
-                            $biayaObat = 0;
-                            if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->resep) {
-                                foreach ($pendaftaran->rekamMedis->resep->detailReseps as $detail) {
-                                    $biayaObat += ($detail->obat->harga_jual ?? 0) * $detail->jumlah;
-                                }
-                            }
-                            $set('biaya_obat', $biayaObat);
-                            $set('biaya_obat', $biayaObat);
-
-                            // 3. Hitung Biaya Tindakan, Penunjang, BHP, Tambahan
-                            $biayaTindakan = 0;
-                            $biayaPenunjang = 0;
-                            $biayaBhp = 0;
-                            $biayaTambahan = 0;
-
-                            if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->tindakans) {
-                                foreach ($pendaftaran->rekamMedis->tindakans as $tindakan) {
-                                    $subtotal = ($tindakan->pivot->harga_snapshot ?? $tindakan->harga) * $tindakan->pivot->jumlah;
-                                    
-                                    switch ($tindakan->kategori) {
-                                        case 'Tindakan':
-                                            $biayaTindakan += $subtotal;
-                                            break;
-                                        case 'Penunjang':
-                                            $biayaPenunjang += $subtotal;
-                                            break;
-                                        case 'BHP':
-                                            $biayaBhp += $subtotal;
-                                            break;
-                                        default:
-                                            $biayaTambahan += $subtotal;
-                                            break;
-                                    }
-                                }
-                            }
-
-                            $set('biaya_tindakan', $biayaTindakan);
-                            $set('biaya_penunjang', $biayaPenunjang);
-                            $set('biaya_bhp', $biayaBhp);
-                            $set('biaya_tambahan', $biayaTambahan);
-
-                            // 4. Update Total
-                            $total = $biayaReg + $biayaKon + $biayaObat + $biayaTindakan + $biayaPenunjang + $biayaBhp + $biayaTambahan;
-                            $set('total_bayar', $total);
-                        })
+                        ->afterStateHydrated(fn ($state, Forms\Set $set) => self::calculateCosts($state, $set))
+                        ->afterStateUpdated(fn ($state, Forms\Set $set) => self::calculateCosts($state, $set))
                         ->label('Pasien / Antrian'),
                     
                     Forms\Components\TextInput::make('nomor_kartu_bpjs')
@@ -182,6 +126,71 @@ class PembayaranResource extends Resource
                         ->default('Tunai'),
                 ])->columns(2)
             ]);
+    }
+
+    public static function calculateCosts($state, Forms\Set $set): void
+    {
+        if (!$state) return;
+        
+        $pendaftaran = \App\Models\Pendaftaran::with([
+            'poli', 
+            'rekamMedis.resep.detailReseps.obat',
+            'rekamMedis.tindakans'
+        ])->find($state);
+
+        if (!$pendaftaran) return;
+
+        // 1. Biaya Pendaftaran & Konsultasi dari Poli
+        $biayaReg = $pendaftaran->poli->biaya_registrasi ?? 0;
+        $biayaKon = $pendaftaran->poli->biaya_konsultasi ?? 0;
+
+        $set('biaya_pendaftaran', $biayaReg);
+        $set('biaya_konsultasi', $biayaKon);
+
+        // 2. Hitung Biaya Obat
+        $biayaObat = 0;
+        if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->resep) {
+            foreach ($pendaftaran->rekamMedis->resep->detailReseps as $detail) {
+                $biayaObat += ($detail->obat->harga_jual ?? 0) * $detail->jumlah;
+            }
+        }
+        $set('biaya_obat', $biayaObat);
+
+        // 3. Hitung Biaya Tindakan, Penunjang, BHP, Tambahan
+        $biayaTindakan = 0;
+        $biayaPenunjang = 0;
+        $biayaBhp = 0;
+        $biayaTambahan = 0;
+
+        if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->tindakans) {
+            foreach ($pendaftaran->rekamMedis->tindakans as $tindakan) {
+                $subtotal = ($tindakan->pivot->harga_snapshot ?? $tindakan->harga) * ($tindakan->pivot->jumlah ?? 1);
+                
+                switch ($tindakan->kategori) {
+                    case 'Tindakan':
+                        $biayaTindakan += $subtotal;
+                        break;
+                    case 'Penunjang':
+                        $biayaPenunjang += $subtotal;
+                        break;
+                    case 'BHP':
+                        $biayaBhp += $subtotal;
+                        break;
+                    default:
+                        $biayaTambahan += $subtotal;
+                        break;
+                }
+            }
+        }
+
+        $set('biaya_tindakan', $biayaTindakan);
+        $set('biaya_penunjang', $biayaPenunjang);
+        $set('biaya_bhp', $biayaBhp);
+        $set('biaya_tambahan', $biayaTambahan);
+
+        // 4. Update Total
+        $total = $biayaReg + $biayaKon + $biayaObat + $biayaTindakan + $biayaPenunjang + $biayaBhp + $biayaTambahan;
+        $set('total_bayar', $total);
     }
 
     public static function updateTotal(Forms\Get $get, Forms\Set $set)
