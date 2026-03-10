@@ -44,18 +44,20 @@ class ResepResource extends Resource
                     ->live()
                     ->afterStateUpdated(function ($state, callable $set) {
                         $obat = \App\Models\Obat::find($state);
+                        $obat = Obat::find($state);
                         $set('satuan_view', $obat?->satuan);
                     }),
                 TextInput::make('satuan_view')
                     ->label('Satuan')
                     ->disabled()
                     ->dehydrated(false)
-                    ->afterStateHydrated(function ($set, $get) {
+                    ->default(function ($get) {
                         $obatId = $get('obat_id');
                         if ($obatId) {
-                            $obat = \App\Models\Obat::find($obatId);
-                            $set('satuan_view', $obat?->satuan);
+                            $obat = Obat::find($obatId);
+                            return $obat ? $obat->satuan : null; // Changed to return satuan, not harga
                         }
+                        return null;
                     }),
                 TextInput::make('dosis')->required(),
                 TextInput::make('jumlah')->numeric()->required(),

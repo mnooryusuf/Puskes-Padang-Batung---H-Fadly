@@ -63,7 +63,7 @@ class PendaftaranResource extends Resource
                 ])
                 ->required()
                 ->label('Jenis Kunjungan'),
-            \Filament\Forms\Components\DatePicker::make('tanggal_daftar')
+            DatePicker::make('tanggal_daftar')
                 ->default(now())
                 ->required()
                 ->live(), // Added live to trigger updates
@@ -90,11 +90,11 @@ class PendaftaranResource extends Resource
                         ->get();
                         
                     if ($jadwals->isEmpty()) {
-                        return \Illuminate\Support\HtmlString::fromHtml('<span class="text-danger-500 font-medium">⚠️ Tidak ada jadwal dokter untuk poli ini pada tanggal terpilih.</span>');
+                        return new \Illuminate\Support\HtmlString('<span class="text-danger-500 font-medium">⚠️ Tidak ada jadwal dokter untuk poli ini pada tanggal terpilih.</span>');
                     }
                     
                     $totalKuota = $jadwals->sum('kuota');
-                    $terdaftar = \App\Models\Pendaftaran::whereDate('tanggal_daftar', $tanggal)
+                    $terdaftar = Pendaftaran::whereDate('tanggal_daftar', $tanggal)
                         ->where('poli_id', $poliId)
                         ->count();
                     $sisa = max(0, $totalKuota - $terdaftar);
@@ -106,7 +106,7 @@ class PendaftaranResource extends Resource
                     $colorClass = $sisa > 0 ? 'text-success-600' : 'text-danger-600';
                     $statusQuota = $sisa > 0 ? "Sisa Kuota: {$sisa} dari {$totalKuota}" : "⚠️ Kuota Penuh ({$totalKuota})";
                     
-                    return \Illuminate\Support\HtmlString::fromHtml("
+                    return new \Illuminate\Support\HtmlString("
                         <div class='mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700'>
                             <div class='font-medium {$colorClass} mb-1'>{$statusQuota}</div>
                             <div class='text-sm text-gray-600 dark:text-gray-400'>
