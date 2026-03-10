@@ -42,13 +42,21 @@ class ListPendaftarans extends ListRecords
                             Select::make('jenis_kelamin')->options(['L' => 'L', 'P' => 'P'])->required(),
                             TextInput::make('no_hp')->required(),
                             TextInput::make('alamat')->required(),
+                            TextInput::make('no_bpjs')->label('Nomor Kartu BPJS (Opsional)'),
                         ])
                         ->required()
                         ->live()
                         ->afterStateUpdated(function ($state, callable $set) {
                             if ($state) {
-                                $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
-                                $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
+                                $pasien = Pasien::find($state);
+                                if ($pasien) {
+                                    $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
+                                    $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
+                                    $set('no_bpjs', $pasien->no_bpjs);
+                                    if ($pasien->no_bpjs) {
+                                        $set('jenis_pembayaran', 'BPJS');
+                                    }
+                                }
                             }
                         }),
                     Select::make('jenis_kunjungan')
@@ -77,7 +85,12 @@ class ListPendaftarans extends ListRecords
                         ])
                         ->default('Umum')
                         ->required()
+                        ->live()
                         ->label('Jenis Pembayaran'),
+                    TextInput::make('no_bpjs')
+                        ->label('Nomor Kartu BPJS')
+                        ->placeholder('Isi jika kategori BPJS...')
+                        ->visible(fn ($get) => $get('jenis_pembayaran') === 'BPJS'),
                     TextInput::make('no_antrian')
                         ->numeric()
                         ->required()
@@ -85,8 +98,22 @@ class ListPendaftarans extends ListRecords
                         ->label('No. Antrian'),
                 ])
                 ->action(function (array $data): void {
+                    $noBpjs = $data['no_bpjs'] ?? null;
+                    unset($data['no_bpjs']); // Remove from pendaftaran data before create
+                    
                     $data['status'] = 'Menunggu Poli';
-                    Pendaftaran::create($data);
+                    $pendaftaran = Pendaftaran::create($data);
+
+                    // Update BPJS data on Pasien if filled
+                    if ($data['pasien_id'] && $noBpjs) {
+                        $pasien = Pasien::find($data['pasien_id']);
+                        if ($pasien) {
+                            $pasien->update([
+                                'no_bpjs' => $noBpjs,
+                                'cara_bayar' => 'BPJS',
+                            ]);
+                        }
+                    }
 
                     Notification::make()
                         ->title('Pendaftaran Berhasil!')

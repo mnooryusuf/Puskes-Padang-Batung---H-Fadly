@@ -3,14 +3,31 @@
 <head>
     <title>Kartu Pasien - {{ $pasien->no_rm }}</title>
     <style>
+        @page { margin: 0; }
+        html, body { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%;
+            height: 100%;
+        }
         body { font-family: sans-serif; }
-        .card { width: 350px; border: 2px solid #00796B; padding: 20px; border-radius: 10px; }
-        .header { text-align: center; border-bottom: 2px solid #00796B; padding-bottom: 10px; margin-bottom: 10px; }
-        .header h2 { margin: 0; color: #00796B; font-size: 18px; }
-        .info div { margin-bottom: 8px; font-size: 12px; }
-        .label { font-weight: bold; color: #666; width: 80px; display: inline-block; }
-        .no-rm { font-size: 20px; font-weight: bold; color: #00796B; text-align: center; margin-top: 10px; }
-        .footer { text-align: center; font-size: 10px; color: #666; margin-top: 15px; }
+        .card { 
+            width: 360px; 
+            height: 210px;
+            border: 2px solid #00796B; 
+            padding: 15px; 
+            border-radius: 10px;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .header { text-align: center; border-bottom: 2px solid #00796B; padding-bottom: 8px; margin-bottom: 8px; }
+        .header h2 { margin: 0; color: #00796B; font-size: 16px; text-transform: uppercase; }
+        .info div { margin-bottom: 5px; font-size: 11px; line-height: 1.2; }
+        .label { font-weight: bold; color: #666; width: 70px; display: inline-block; }
+        .no-rm { font-size: 18px; font-weight: bold; color: #00796B; text-align: center; margin-top: 8px; }
+        .footer { text-align: center; font-size: 9px; color: #666; margin-top: 10px; }
     </style>
 </head>
 <body>

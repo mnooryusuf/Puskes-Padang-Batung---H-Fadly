@@ -126,6 +126,16 @@ class PasienResource extends Resource
             TextColumn::make('tanggal_lahir')->date(),
             TextColumn::make('jenis_kelamin')->label('JK'),
             TextColumn::make('no_hp')->label('No. HP'),
+            TextColumn::make('cara_bayar')
+                ->label('Jenis Pembayaran')
+                ->badge()
+                ->color(fn (string $state): string => match ($state) {
+                    'BPJS' => 'success',
+                    'Umum' => 'info',
+                    default => 'gray',
+                })
+                ->searchable()
+                ->sortable(),
             TextColumn::make('user.username')
                 ->label('Username Akun')
                 ->badge()
