@@ -29,7 +29,7 @@ class AntrianPoliResource extends Resource
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return !($user?->hasRole('pasien') ?? false);
+        return $user?->hasRole('admin') || $user?->hasRole('dokter');
     }
     protected static ?string $pluralModelLabel = 'Antrian Poli';
 

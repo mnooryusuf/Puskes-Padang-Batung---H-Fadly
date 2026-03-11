@@ -23,7 +23,7 @@ class AntrianKasirResource extends Resource
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return !($user?->hasRole('pasien') ?? false);
+        return $user?->hasRole('admin') || $user?->hasRole('kasir');
     }
     protected static ?string $slug = 'antrian-kasir';
 

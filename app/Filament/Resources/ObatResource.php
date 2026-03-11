@@ -27,7 +27,7 @@ class ObatResource extends Resource
 
     public static function canAccess(): bool
     {
-        return !auth()->user()?->hasRole('pasien');
+        return auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('apoteker');
     }
 
     protected static ?string $pluralModelLabel = 'Obat';

@@ -23,7 +23,7 @@ class PoliResource extends Resource
 
     public static function canAccess(): bool
     {
-        return !auth()->user()?->hasRole('pasien');
+        return auth()->user()?->hasRole('admin');
     }
 
     protected static ?string $pluralModelLabel = 'Poli';

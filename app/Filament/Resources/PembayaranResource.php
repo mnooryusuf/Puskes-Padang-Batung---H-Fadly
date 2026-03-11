@@ -24,7 +24,7 @@ class PembayaranResource extends Resource
 
     public static function canAccess(): bool
     {
-        return !auth()->user()?->hasRole('pasien');
+        return auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('kasir');
     }
     protected static ?string $pluralModelLabel = 'Kasir / Pembayaran';
 
