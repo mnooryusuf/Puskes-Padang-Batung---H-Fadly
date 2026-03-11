@@ -38,7 +38,7 @@ class ListPendaftarans extends ListRecords
                             if ($state) {
                                 $pasien = Pasien::find($state, ['*']);
                                 if ($pasien) {
-                                    $hasHistory = Pendaftaran::where('pasien_id', '=', $state)->exists();
+                                    $hasHistory = Pendaftaran::where('pasien_id', $state)->exists();
                                     $set('jenis_kunjungan', $hasHistory ? 'Lama' : 'Baru');
                                     $set('no_bpjs', $pasien->no_bpjs);
                                     if ($pasien->no_bpjs) {

@@ -11,6 +11,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Forms\Components\TextInput;
 use Illuminate\Support\Carbon;
 
 class DaftarMandiri extends Page implements HasForms
@@ -62,13 +63,22 @@ class DaftarMandiri extends Page implements HasForms
                     ->options([
                         'Umum' => 'Umum',
                         'BPJS' => 'BPJS',
-                        'Jamkesda' => 'Jamkesda',
+                        'BOK' => 'BOK (Bantuan Operasional Kesehatan)',
+                        'Lainnya' => 'Lainnya',
                     ])
                     ->default(function () {
                         $pasien = auth()->user()?->pasien;
                         return $pasien?->cara_bayar ?? 'Umum';
                     })
-                    ->required(),
+                    ->required()
+                    ->live(),
+
+                TextInput::make('no_bpjs')
+                    ->label('Nomor Kartu BPJS')
+                    ->placeholder('Masukkan nomor kartu BPJS Anda...')
+                    ->visible(fn ($get) => $get('jenis_pembayaran') === 'BPJS')
+                    ->default(fn() => auth()->user()?->pasien?->no_bpjs)
+                    ->required(fn ($get) => $get('jenis_pembayaran') === 'BPJS'),
             ])
             ->statePath('data');
     }
@@ -108,6 +118,9 @@ class DaftarMandiri extends Page implements HasForms
         // Cek riwayat untuk Jenis Kunjungan
         $hasHistory = Pendaftaran::where('pasien_id', $pasien->id)->exists();
 
+        // Ambil data BPJS jika ada
+        $noBpjs = $data['no_bpjs'] ?? null;
+        
         Pendaftaran::create([
             'pasien_id' => $pasien->id,
             'tanggal_daftar' => $data['tanggal_daftar'],
@@ -117,6 +130,14 @@ class DaftarMandiri extends Page implements HasForms
             'status' => 'Menunggu Poli',
             'jenis_kunjungan' => $hasHistory ? 'Lama' : 'Baru',
         ]);
+
+        // Update BPJS data on Pasien if filled or changed
+        if ($data['jenis_pembayaran'] === 'BPJS' && $noBpjs) {
+            $pasien->update([
+                'no_bpjs' => $noBpjs,
+                'cara_bayar' => 'BPJS',
+            ]);
+        }
 
         Notification::make()
             ->title('Pendaftaran Berhasil')
