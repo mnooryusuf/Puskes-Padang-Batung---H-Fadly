@@ -27,6 +27,36 @@ class StatsOverview extends BaseWidget
         $startDate = $this->filters['startDate'] ?? now()->startOfMonth();
         $endDate = $this->filters['endDate'] ?? now()->endOfMonth();
 
+        // Role Dokter Stats
+        if ($user->hasRole('dokter')) {
+            $dokter = $user->dokter;
+            $poliId = $dokter?->poli_id;
+            $today = now()->toDateString();
+            
+            return [
+                Stat::make('Pasien Menunggu (Poli)', Pendaftaran::where('poli_id', $poliId)
+                    ->where('status', 'Menunggu Poli')
+                    ->whereDate('tanggal_daftar', $today)
+                    ->count())
+                    ->description('Pasien menunggu di poli Anda')
+                    ->descriptionIcon('heroicon-m-clock', IconPosition::Before)
+                    ->color('warning'),
+                Stat::make('Selesai (Hari Ini)', Pendaftaran::where('poli_id', $poliId)
+                    ->where('status', 'Selesai')
+                    ->whereDate('tanggal_daftar', $today)
+                    ->count())
+                    ->description('Pasien Anda tangani hari ini')
+                    ->descriptionIcon('heroicon-m-check-circle', IconPosition::Before)
+                    ->color('success'),
+                Stat::make('Pasien Anda (Bulan Ini)', Pendaftaran::where('poli_id', $poliId)
+                    ->whereBetween('tanggal_daftar', [now()->startOfMonth(), now()->endOfMonth()])
+                    ->count())
+                    ->description('Total pasien dilayani bulan ini')
+                    ->descriptionIcon('heroicon-m-user-group', IconPosition::Before)
+                    ->color('info'),
+            ];
+        }
+
         // Role Petugas (Pendaftaran) Stats
         if ($user->hasRole('petugas')) {
             $today = now()->toDateString();

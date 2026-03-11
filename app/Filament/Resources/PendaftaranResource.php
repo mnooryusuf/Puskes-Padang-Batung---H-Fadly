@@ -27,7 +27,9 @@ class PendaftaranResource extends Resource
 
     public static function canAccess(): bool
     {
-        return !auth()->user()?->hasRole('pasien');
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return $user?->hasRole('admin') || $user?->hasRole('petugas');
     }
     protected static ?string $pluralModelLabel = 'Pendaftaran';
 
