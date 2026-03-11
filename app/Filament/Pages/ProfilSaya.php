@@ -27,7 +27,7 @@ class ProfilSaya extends Page implements HasForms
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('pasien') || auth()->user()?->hasRole('admin');
+        return auth()->user()?->hasRole('pasien');
     }
 
     protected static string $view = 'filament.pages.profil-saya';
