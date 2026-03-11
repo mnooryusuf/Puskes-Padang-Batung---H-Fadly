@@ -22,9 +22,41 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
         $startDate = $this->filters['startDate'] ?? now()->startOfMonth();
         $endDate = $this->filters['endDate'] ?? now()->endOfMonth();
 
+        // Role Petugas (Pendaftaran) Stats
+        if ($user->hasRole('petugas')) {
+            $today = now()->toDateString();
+            
+            return [
+                Stat::make('Pendaftaran Hari Ini', Pendaftaran::whereDate('tanggal_daftar', $today)->count())
+                    ->description('Total pasien didaftarkan hari ini')
+                    ->descriptionIcon('heroicon-m-clipboard-document-check', IconPosition::Before)
+                    ->color('primary'),
+                Stat::make('Menunggu Pelayanan', Pendaftaran::where('status', 'Menunggu Poli')->count())
+                    ->description('Pasien belum dipanggil poli')
+                    ->descriptionIcon('heroicon-m-clock', IconPosition::Before)
+                    ->color('warning'),
+                Stat::make('Pasien Baru (Hari Ini)', Pasien::whereDate('created_at', $today)->count())
+                    ->description('Rekam medis baru dibuat hari ini')
+                    ->descriptionIcon('heroicon-m-user-plus', IconPosition::Before)
+                    ->color('success'),
+                Stat::make('Sisa Kuota Total', function() use ($today) {
+                    $hari = \Carbon\Carbon::parse($today)->locale('id')->isoFormat('dddd');
+                    $totalKuota = \App\Models\JadwalDokter::where('hari', $hari)->where('is_active', true)->sum('kuota');
+                    $terdaftar = Pendaftaran::whereDate('tanggal_daftar', $today)->count();
+                    return max(0, $totalKuota - $terdaftar);
+                })
+                    ->description('Sisa kuota pendaftaran hari ini')
+                    ->descriptionIcon('heroicon-m-ticket', IconPosition::Before)
+                    ->color('info'),
+            ];
+        }
+
+        // Admin/Default Stats
         return [
             Stat::make('Pasien Baru', Pasien::whereBetween('created_at', [$startDate, $endDate])->count())
                 ->description('Total pasien terdaftar dlm periode')

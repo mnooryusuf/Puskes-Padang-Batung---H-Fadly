@@ -14,7 +14,7 @@ class KunjunganPasienChart extends ChartWidget
 
     public static function canView(): bool
     {
-        return !auth()->user()?->hasRole('pasien');
+        return auth()->user()?->hasRole('admin');
     }
 
     protected function getData(): array
