@@ -21,7 +21,8 @@ class DaftarMandiri extends Page implements HasForms
     protected static ?string $navigationIcon = 'heroicon-o-document-plus';
     protected static ?string $navigationLabel = 'Pendaftaran Mandiri';
     protected static ?string $title = 'Pendaftaran Mandiri (Online)';
-    protected static ?int $navigationSort = -1;
+    protected static ?string $navigationGroup = 'Layanan Pasien';
+    protected static ?int $navigationSort = 0;
     protected static string $view = 'filament.pages.daftar-mandiri';
 
     public ?array $data = [];
