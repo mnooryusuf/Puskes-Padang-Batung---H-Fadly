@@ -23,7 +23,7 @@ class ProfilSaya extends Page implements HasForms
     protected static ?string $navigationLabel = 'Profil Saya';
     protected static ?string $title = 'Profil Saya';
     protected static ?string $navigationGroup = 'Layanan Pasien';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 10;
 
     public static function canAccess(): bool
     {
