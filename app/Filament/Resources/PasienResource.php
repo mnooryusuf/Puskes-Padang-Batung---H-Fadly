@@ -31,6 +31,7 @@ class PasienResource extends Resource
     {
         return !auth()->user()?->hasRole('pasien');
     }
+
     protected static ?string $pluralModelLabel = 'Pasien';
 
     public static function getFormSchema(): array

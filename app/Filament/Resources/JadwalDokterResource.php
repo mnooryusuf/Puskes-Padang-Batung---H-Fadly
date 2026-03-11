@@ -25,6 +25,7 @@ class JadwalDokterResource extends Resource
     {
         return !auth()->user()?->hasRole('pasien');
     }
+
     protected static ?string $pluralModelLabel = 'Jadwal Dokter';
 
     public static function form(Form $form): Form

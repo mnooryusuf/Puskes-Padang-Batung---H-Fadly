@@ -20,6 +20,12 @@ class TindakanResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Tindakan & Penunjang';
+
+    public static function canAccess(): bool
+    {
+        return !auth()->user()?->hasRole('pasien');
+    }
+
     protected static ?string $pluralModelLabel = 'Tindakan & Penunjang';
 
     public static function form(Form $form): Form

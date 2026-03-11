@@ -25,6 +25,7 @@ class PoliResource extends Resource
     {
         return !auth()->user()?->hasRole('pasien');
     }
+
     protected static ?string $pluralModelLabel = 'Poli';
 
     public static function form(Form $form): Form

@@ -29,6 +29,7 @@ class ObatResource extends Resource
     {
         return !auth()->user()?->hasRole('pasien');
     }
+
     protected static ?string $pluralModelLabel = 'Obat';
 
     public static function form(Form $form): Form
