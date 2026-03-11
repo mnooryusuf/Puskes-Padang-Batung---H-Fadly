@@ -19,14 +19,18 @@ class KunjunganPasienChart extends ChartWidget
 
     protected function getData(): array
     {
-        // Simple manual trend calculation since trend package might not be installed
+        $startDate = \Carbon\Carbon::parse($this->filters['startDate'] ?? now()->subDays(6));
+        $endDate = \Carbon\Carbon::parse($this->filters['endDate'] ?? now());
+        
         $data = [];
         $labels = [];
         
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i);
-            $labels[] = $date->format('d M');
-            $data[] = Pendaftaran::whereDate('created_at', $date->toDateString())->count();
+        $currentDate = $startDate->copy();
+        while ($currentDate <= $endDate) {
+            $dateString = $currentDate->toDateString();
+            $labels[] = $currentDate->format('d M');
+            $data[] = Pendaftaran::whereDate('created_at', '=', $dateString, 'and')->count();
+            $currentDate->addDay();
         }
 
         return [

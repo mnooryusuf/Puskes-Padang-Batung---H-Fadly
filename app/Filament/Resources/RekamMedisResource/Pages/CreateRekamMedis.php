@@ -83,6 +83,11 @@ class CreateRekamMedis extends CreateRecord
         $statusPulang = $record->status_pulang;
 
         if ($pendaftaran) {
+            // Mark 'Poli' queue as finished
+            \App\Models\Antrian::where('pendaftaran_id', '=', $pendaftaran->id, 'and')
+                ->where('kategori', '=', 'Poli', 'and')
+                ->update(['status' => 'Selesai']);
+
             // Logika Khusus Meninggal Dunia
             if ($statusPulang === 'Meninggal') {
                 // 1. Update master pasien

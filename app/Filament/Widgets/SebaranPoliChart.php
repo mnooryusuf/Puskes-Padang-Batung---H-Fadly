@@ -18,7 +18,12 @@ class SebaranPoliChart extends ChartWidget
 
     protected function getData(): array
     {
-        $polis = Poli::withCount('pendaftarans')->get();
+        $startDate = $this->filters['startDate'] ?? now()->startOfMonth();
+        $endDate = $this->filters['endDate'] ?? now()->endOfMonth();
+
+        $polis = Poli::withCount(['pendaftarans' => function ($query) use ($startDate, $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        }])->get();
 
         return [
             'datasets' => [
