@@ -6,11 +6,11 @@
             <div class="space-y-1">
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Pendaftaran:</span>
-                    <span class="font-medium text-gray-900 dark:text-white">@money($poli->biaya_registrasi, 'idr')</span>
+                    <span class="font-medium text-gray-900 dark:text-white">Rp {{ number_format($poli->biaya_registrasi, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between text-sm">
                     <span class="text-gray-500">Konsultasi:</span>
-                    <span class="font-medium text-gray-900 dark:text-white">@money($poli->biaya_konsultasi, 'idr')</span>
+                    <span class="font-medium text-gray-900 dark:text-white">Rp {{ number_format($poli->biaya_konsultasi, 0, ',', '.') }}</span>
                 </div>
             </div>
         </div>

@@ -7,7 +7,7 @@
         </div>
         <div class="text-right">
             <h4 class="text-xs font-semibold text-gray-500 uppercase">Status Pulang</h4>
-            <p class="text-sm font-medium @if($record->status_pulang == 'Rujuk') text-amber-600 @else text-green-600 @endif uppercase">
+            <p class="text-sm font-medium {{ $record->status_pulang == 'Rujuk' ? 'text-amber-500' : 'text-green-600' }} uppercase">
                 {{ $record->status_pulang ?: 'Selesai' }}
             </p>
         </div>
