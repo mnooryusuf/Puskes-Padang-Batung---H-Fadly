@@ -16,6 +16,7 @@ class ManagePenyakits extends ManageRecords
             Actions\Action::make('import')
                 ->label('Import Spreadsheet')
                 ->icon('heroicon-o-cloud-arrow-down')
+                ->visible(fn () => !auth()->user()->hasRole('apoteker'))
                 ->color('success')
                 ->form([
                     \Filament\Forms\Components\TextInput::make('url')

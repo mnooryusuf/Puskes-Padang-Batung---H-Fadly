@@ -32,6 +32,21 @@ class PasienResource extends Resource
         return !auth()->user()?->hasRole('pasien');
     }
 
+    public static function canCreate(): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
+    }
+
     protected static ?string $pluralModelLabel = 'Pasien';
 
     public static function getFormSchema(): array
@@ -160,7 +175,8 @@ class PasienResource extends Resource
             EditAction::make(),
             DeleteAction::make(),
         ])->groupedBulkActions([
-            DeleteBulkAction::make(),
+            DeleteBulkAction::make()
+                ->visible(fn () => !auth()->user()->hasRole('apoteker')),
         ]);
     }
 

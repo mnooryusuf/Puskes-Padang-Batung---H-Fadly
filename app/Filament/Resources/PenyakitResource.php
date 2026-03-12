@@ -22,7 +22,24 @@ class PenyakitResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin');
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return $user?->hasRole('admin');
+    }
+
+    public static function canCreate(): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('apoteker');
     }
     protected static ?string $pluralModelLabel = 'Penyakit (ICD-10)';
 

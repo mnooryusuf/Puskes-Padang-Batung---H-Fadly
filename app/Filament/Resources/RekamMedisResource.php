@@ -31,7 +31,9 @@ class RekamMedisResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('dokter');
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return $user?->hasRole('admin') || $user?->hasRole('dokter') || $user?->hasRole('apoteker');
     }
     protected static ?string $pluralModelLabel = 'Rekam Medis';
 

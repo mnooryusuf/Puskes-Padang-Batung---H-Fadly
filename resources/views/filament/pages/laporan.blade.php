@@ -16,6 +16,7 @@
             </div>
         </div>
 
+        @if(!auth()->user()->hasRole('apoteker'))
         {{-- Card LRA --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-4">
@@ -47,6 +48,7 @@
                 {{ $this->getAction('cetak_kunjungan') }}
             </div>
         </div>
+        @endif
 
         {{-- Card Kunjungan Per Poli --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -64,6 +66,7 @@
             </div>
         </div>
 
+        @if(!auth()->user()->hasRole('apoteker'))
         {{-- Card Pasien Baru vs Lama --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-4">
@@ -127,6 +130,7 @@
                 {{ $this->getAction('cetak_pasien_status') }}
             </div>
         </div>
+        @endif
 
         {{-- Card Obat Expired --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
@@ -160,6 +164,7 @@
             </div>
         </div>
 
+        @if(!auth()->user()->hasRole('apoteker'))
         {{-- Card Pendapatan Kasir --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-4">
@@ -191,6 +196,7 @@
                 {{ $this->getAction('cetak_distribusi_penyakit') }}
             </div>
         </div>
+        @endif
 
         {{-- Card LB1 --}}
         <div class="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">

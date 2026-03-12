@@ -57,6 +57,32 @@ class StatsOverview extends BaseWidget
             ];
         }
 
+        // Role Apoteker (Farmasi) Stats
+        if ($user->hasRole('apoteker')) {
+            $today = now()->toDateString();
+            
+            return [
+                Stat::make('Resep Menunggu', Antrian::where('kategori', 'Obat')
+                    ->where('status', 'Menunggu')
+                    ->whereDate('created_at', $today)
+                    ->count())
+                    ->description('Resep yang belum diproses')
+                    ->descriptionIcon('heroicon-m-clock', IconPosition::Before)
+                    ->color('warning'),
+                Stat::make('Resep Selesai (Hari Ini)', Antrian::where('kategori', 'Obat')
+                    ->where('status', 'Selesai')
+                    ->whereDate('created_at', $today)
+                    ->count())
+                    ->description('Total resep diserahkan hari ini')
+                    ->descriptionIcon('heroicon-m-check-circle', IconPosition::Before)
+                    ->color('success'),
+                Stat::make('Obat Stok Menipis', \App\Models\Obat::where('stok', '<', 10)->count())
+                    ->description('Jumlah produk butuh restock')
+                    ->descriptionIcon('heroicon-m-beaker', IconPosition::Before)
+                    ->color('danger'),
+            ];
+        }
+
         // Role Petugas (Pendaftaran) Stats
         if ($user->hasRole('petugas')) {
             $today = now()->toDateString();
