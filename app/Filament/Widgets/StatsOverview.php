@@ -83,6 +83,33 @@ class StatsOverview extends BaseWidget
             ];
         }
 
+        // Role Kasir (Keuangan) Stats
+        if ($user->hasRole('kasir')) {
+            $today = now()->toDateString();
+            
+            return [
+                Stat::make('Pendapatan Hari Ini', 'Rp ' . Number::format(
+                    Pembayaran::where('status_pembayaran', 'Lunas')
+                        ->whereDate('created_at', $today)
+                        ->sum('total_bayar'), 
+                    locale: 'id'
+                ))
+                    ->description('Total uang masuk hari ini')
+                    ->descriptionIcon('heroicon-m-banknotes', IconPosition::Before)
+                    ->color('success'),
+                Stat::make('Menunggu Pembayaran', Pendaftaran::where('status', 'Menunggu Pembayaran')->count())
+                    ->description('Pasien di antrian kasir')
+                    ->descriptionIcon('heroicon-m-clock', IconPosition::Before)
+                    ->color('warning'),
+                Stat::make('Sudah Dibayar (Hari Ini)', Pembayaran::where('status_pembayaran', 'Lunas')
+                    ->whereDate('created_at', $today)
+                    ->count())
+                    ->description('Total transaksi lunas hari ini')
+                    ->descriptionIcon('heroicon-m-check-circle', IconPosition::Before)
+                    ->color('primary'),
+            ];
+        }
+
         // Role Petugas (Pendaftaran) Stats
         if ($user->hasRole('petugas')) {
             $today = now()->toDateString();

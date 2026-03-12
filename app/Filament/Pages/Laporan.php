@@ -25,7 +25,7 @@ class Laporan extends Page implements HasForms, HasActions
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('kepala_puskesmas') || auth()->user()->hasRole('petugas') || auth()->user()->hasRole('apoteker');
+        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('kepala_puskesmas') || auth()->user()->hasRole('petugas') || auth()->user()->hasRole('apoteker') || auth()->user()->hasRole('kasir');
     }
 
     protected function getHeaderActions(): array
