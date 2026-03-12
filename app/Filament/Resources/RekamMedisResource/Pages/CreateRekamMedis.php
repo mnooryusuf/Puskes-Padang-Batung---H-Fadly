@@ -142,9 +142,12 @@ class CreateRekamMedis extends CreateRecord
         if ($pendaftaranId) {
             $pendaftaran = Pendaftaran::find($pendaftaranId);
             if ($pendaftaran) {
+                $user = auth()->user();
+                $dokterId = $user?->dokter?->id;
+
                 $this->form->fill([
                     'pendaftaran_id' => $pendaftaran->id,
-                    'dokter_id' => $pendaftaran->poli?->dokter?->id, // Attempt to auto-fill doctor from poli
+                    'dokter_id' => $dokterId,
                 ]);
 
                 // Update status to 'Pemeriksaan' when doctor opens the form

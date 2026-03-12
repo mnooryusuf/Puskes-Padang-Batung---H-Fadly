@@ -35,7 +35,16 @@ class AntrianPoliResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'Menunggu Poli')->count() ?: null;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $query = static::getModel()::where('status', 'Menunggu Poli')
+            ->whereDate('tanggal_daftar', now());
+
+        if ($user?->hasRole('dokter')) {
+            $query->where('poli_id', $user->dokter?->poli_id);
+        }
+
+        return $query->count() ?: null;
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -61,7 +70,15 @@ class AntrianPoliResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (\Illuminate\Database\Eloquent\Builder $query) => $query->whereDate('tanggal_daftar', now()))
+            ->modifyQueryUsing(function (\Illuminate\Database\Eloquent\Builder $query) {
+                $query->whereDate('tanggal_daftar', now());
+
+                /** @var \App\Models\User|null $user */
+                $user = auth()->user();
+                if ($user?->hasRole('dokter')) {
+                    $query->where('poli_id', $user->dokter?->poli_id);
+                }
+            })
             ->columns([
                 TextColumn::make('no_antrian')->sortable(),
                 TextColumn::make('pasien.no_rm')->label('No. RM')->searchable(),

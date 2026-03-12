@@ -51,7 +51,8 @@ class RekamMedisResource extends Resource
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama_dokter} - (" . ($record->poli?->nama_poli ?? 'Tanpa Poli') . ")")
                     ->searchable()
                     ->preload()
-                    ->required(),
+                    ->required()
+                    ->default(fn () => auth()->user()->dokter?->id),
             ])->columns(2),
 
             Section::make('Riwayat Medis Pasien (Sebelumnya)')
