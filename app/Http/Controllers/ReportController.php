@@ -68,13 +68,28 @@ class ReportController extends Controller
     {
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
+        $poliId = $request->input('poli_id');
 
-        $kunjungans = Pendaftaran::select(['jenis_pembayaran', DB::raw('COUNT(*) as total')])
-            ->whereBetween('tanggal_daftar', [$start, $end])
-            ->groupBy('jenis_pembayaran')
-            ->get();
+        $query = Pendaftaran::query()->with('pasien')
+            ->whereBetween('tanggal_daftar', [$start, $end]);
 
-        $pdf = Pdf::loadView('pdf.laporan-kunjungan', compact('kunjungans', 'start', 'end'));
+        if ($poliId) {
+            $query->where('poli_id', $poliId);
+            $kunjungans = $query->orderBy('tanggal_daftar', 'asc')->get();
+            $view = 'pdf.laporan-kunjungan-poli-detail'; // We'll create this specific view
+        } else {
+            $kunjungans = $query->select(['jenis_pembayaran', DB::raw('COUNT(*) as total')])
+                ->groupBy('jenis_pembayaran')
+                ->get();
+            $view = 'pdf.laporan-kunjungan';
+        }
+
+        $pdf = Pdf::loadView($view, compact('kunjungans', 'start', 'end', 'poliId'));
+
+        if ($poliId) {
+            $pdf->setPaper('a4', 'landscape');
+        }
+
         return $pdf->stream("Laporan-Kunjungan.pdf");
     }
 
@@ -82,17 +97,20 @@ class ReportController extends Controller
     {
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
+        $poliId = $request->input('poli_id');
 
         $penyakits = DB::table('rekam_medis')
             ->join('penyakit', 'rekam_medis.penyakit_id', '=', 'penyakit.id')
+            ->join('pendaftaran', 'rekam_medis.pendaftaran_id', '=', 'pendaftaran.id')
             ->select('penyakit.nama_penyakit', 'penyakit.kode', DB::raw('COUNT(*) as total'))
             ->whereBetween('rekam_medis.created_at', [$start, $end])
+            ->when($poliId, fn($q) => $q->where('pendaftaran.poli_id', $poliId))
             ->groupBy('rekam_medis.penyakit_id', 'penyakit.nama_penyakit', 'penyakit.kode')
             ->orderBy('total', 'desc')
             ->limit(10)
             ->get();
 
-        $pdf = Pdf::loadView('pdf.laporan-lb1', compact('penyakits', 'start', 'end'));
+        $pdf = Pdf::loadView('pdf.laporan-lb1', compact('penyakits', 'start', 'end', 'poliId'));
         return $pdf->stream("Laporan-LB1.pdf");
     }
 
@@ -131,17 +149,20 @@ class ReportController extends Controller
     {
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
+        $poliId = $request->input('poli_id');
 
         $data = DB::table('rekam_medis_tindakan')
             ->join('tindakans', 'rekam_medis_tindakan.tindakan_id', '=', 'tindakans.id')
             ->join('rekam_medis', 'rekam_medis_tindakan.rekam_medis_id', '=', 'rekam_medis.id')
+            ->join('pendaftaran', 'rekam_medis.pendaftaran_id', '=', 'pendaftaran.id')
             ->select('tindakans.nama_tindakan', DB::raw('count(*) as total'))
             ->whereBetween('rekam_medis.created_at', [$start, $end])
+            ->when($poliId, fn($q) => $q->where('pendaftaran.poli_id', $poliId))
             ->groupBy('tindakans.id', 'tindakans.nama_tindakan')
             ->orderBy('total', 'desc')
             ->get();
 
-        $pdf = Pdf::loadView('pdf.laporan-rekap-tindakan', compact('data', 'start', 'end'));
+        $pdf = Pdf::loadView('pdf.laporan-rekap-tindakan', compact('data', 'start', 'end', 'poliId'));
         return $pdf->stream("Laporan-Rekap-Tindakan.pdf");
     }
 
@@ -149,15 +170,18 @@ class ReportController extends Controller
     {
         $start = $request->input('start_date', now()->startOfMonth());
         $end = $request->input('end_date', now()->endOfMonth());
+        $poliId = $request->input('poli_id');
 
         $data = DB::table('rekam_medis')
+            ->join('pendaftaran', 'rekam_medis.pendaftaran_id', '=', 'pendaftaran.id')
             ->whereNotNull('instruksi_lab')
-            ->whereBetween('created_at', [$start, $end])
+            ->whereBetween('rekam_medis.created_at', [$start, $end])
+            ->when($poliId, fn($q) => $q->where('pendaftaran.poli_id', $poliId))
             ->select('instruksi_lab', DB::raw('count(*) as total'))
             ->groupBy('instruksi_lab')
             ->get();
 
-        $pdf = Pdf::loadView('pdf.laporan-statistik-lab', compact('data', 'start', 'end'));
+        $pdf = Pdf::loadView('pdf.laporan-statistik-lab', compact('data', 'start', 'end', 'poliId'));
         return $pdf->stream("Laporan-Statistik-Lab.pdf");
     }
 
