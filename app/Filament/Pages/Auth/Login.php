@@ -26,6 +26,11 @@ class Login extends BasePage
 
     public function getHeading(): string | Htmlable
     {
+        return 'Aplikasi Rawat Jalan Puskesmas Padang Batung';
+    }
+
+    public function getSubheading(): string | Htmlable | null
+    {
         return 'Masuk ke Sistem';
     }
 

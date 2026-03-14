@@ -26,7 +26,8 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->brandName('Aplikasi Rawat Jalan Puskesmas')
+            ->brandLogo(asset('images/logo.svg'))
+            ->brandLogoHeight('6rem')
             ->id('admin')
             ->path('dashboard')
             ->login(Login::class)
