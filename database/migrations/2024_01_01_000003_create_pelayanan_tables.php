@@ -64,7 +64,7 @@ return new class extends Migration
         Schema::create('rekam_medis_tindakan', function (Blueprint $table) {
             $table->id();
             $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->cascadeOnDelete();
-            $table->foreignId('tindakan_id')->constrained('tindakans')->cascadeOnDelete();
+            $table->foreignId('tindakan_id')->constrained('tindakan')->cascadeOnDelete();
             $table->integer('jumlah')->default(1);
             $table->decimal('harga_snapshot', 12, 2)->default(0);
             $table->timestamps();

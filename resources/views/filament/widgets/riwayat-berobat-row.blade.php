@@ -62,9 +62,9 @@
                     </div>
                     <div>
                         <p class="text-[10px] text-gray-500 uppercase">Tindakan Medis</p>
-                        @if($record->rekamMedis->tindakans->count() > 0)
+                        @if($record->rekamMedis->tindakan->count() > 0)
                             <ul class="list-disc list-inside text-sm text-gray-900 dark:text-white mt-1">
-                                @foreach($record->rekamMedis->tindakans as $tindakan)
+                                @foreach($record->rekamMedis->tindakan as $tindakan)
                                     <li>{{ $tindakan->nama_tindakan }}</li>
                                 @endforeach
                             </ul>

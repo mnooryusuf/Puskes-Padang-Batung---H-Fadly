@@ -10,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Hidden;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -20,6 +21,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use App\Filament\Resources\RekamMedisResource\Pages;
 use App\Filament\Resources\RekamMedisResource\RelationManagers\HistoryRekamMedisRelationManager;
+use App\Models\Tindakan;
+use App\Models\Obat;
+use App\Models\Antrian;
+use Filament\Forms;
 
 class RekamMedisResource extends Resource
 {
@@ -88,12 +93,12 @@ class RekamMedisResource extends Resource
                             $pendaftaranId = $get('pendaftaran_id');
                             if (!$pendaftaranId) return 'Silakan pilih pasien terlebih dahulu.';
 
-                            $pendaftaran = Pendaftaran::find($pendaftaranId);
+                            $pendaftaran = Pendaftaran::find($pendaftaranId, ['*']);
                             if (!$pendaftaran) return 'Data pendaftaran tidak ditemukan.';
 
                             $pasienId = $pendaftaran->pasien_id;
-                            $history = RekamMedis::with(['penyakit', 'tindakans', 'resep.detailReseps.obat'])
-                                ->whereHas('pendaftaran', fn ($q) => $q->where('pasien_id', $pasienId))
+                            $history = RekamMedis::with(['penyakit', 'tindakan', 'resep.detailReseps.obat'])
+                                ->whereHas('pendaftaran', fn ($q) => $q->where('pasien_id', '=', $pasienId))
                                 ->orderBy('created_at', 'desc')
                                 ->get();
 
@@ -117,8 +122,8 @@ class RekamMedisResource extends Resource
                                 
                                 // Gabungkan daftar tindakan pivot
                                 $tindakanList = "";
-                                if ($item->tindakans->isNotEmpty()) {
-                                    $tindakanList = collect($item->tindakans)->map(fn($t) => "• {$t->nama_tindakan} ({$t->pivot->jumlah}x)")->implode('<br>');
+                                if ($item->tindakan->isNotEmpty()) {
+                                    $tindakanList = collect($item->tindakan)->map(fn($t) => "• {$t->nama_tindakan} ({$t->pivot->jumlah}x)")->implode('<br>');
                                 }
                                 
                                 // Gabungkan daftar obat resep
@@ -214,36 +219,38 @@ class RekamMedisResource extends Resource
                     ->default('Primer'),
                 
                 // Tambahan: Multi-select Tindakan / BHP (yang ada harganya)
-                Repeater::make('tindakans')
-                    ->relationship('tindakans') // Kembali menggunakan BelongsToMany (tindakans), BUKAN Model pivot
-                    ->label('Input Tagihan Tindakan / Pemeriksaan / BHP')
+                          Repeater::make('tindakan')
+                    ->relationship('tindakan') // Kembali menggunakan BelongsToMany (tindakan), BUKAN Model pivot
                     ->schema([
                         Select::make('tindakan_id')
                             ->label('Nama Tindakan / Layanan')
-                            ->options(\App\Models\Tindakan::where('is_active', true)
-                                ->where('kategori', '!=', 'Penunjang') // Filter agar tidak duplikat dengan section lab
-                                ->pluck('nama_tindakan', 'id'))
+                            ->options(Tindakan::where('is_active', '=', true)->where('kategori', '!=', 'Penunjang')->pluck('nama_tindakan', 'id'))
+                            ->required()
                             ->searchable()
-                            ->preload()
-                            ->disableOptionWhen(function ($value, $state, \Filament\Forms\Get $get) {
-                                return collect($get('../../tindakans'))->pluck('tindakan_id')->contains($value);
-                            })
+                            ->validationMessages([
+                                'unique' => 'Tindakan ini sudah ditambahkan.',
+                            ])
+                            ->columnSpan(8)
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->live()
-                            ->afterStateUpdated(function (callable $set, $state) {
-                                if ($state) {
-                                    $tindakan = \App\Models\Tindakan::find($state);
-                                    if ($tindakan) {
-                                        $set('harga_snapshot', $tindakan->harga);
-                                    }
+                            ->afterStateUpdated(function ($state, $set) {
+                                $tindakan = Tindakan::find($state, ['*']);
+                                if ($tindakan) {
+                                    $set('harga_snapshot', $tindakan->harga);
                                 }
-                            })
-                            ->required(),
+                            }),
                         TextInput::make('jumlah')
                             ->numeric()
                             ->default(1)
+                            ->minValue(1)
                             ->required()
-                            ->minValue(1),
+                            ->columnSpan(2),
+                        Hidden::make('harga_snapshot'),
                     ])
+                    ->itemLabel(fn (array $state): ?string => Tindakan::find($state['tindakan_id'] ?? null, ['*'])?->nama_tindakan ?? null)
+                    ->grid(2)
+                    ->columnSpanFull()
+                    ->defaultItems(0)
                     ->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                         return $data;
                     })
@@ -265,9 +272,9 @@ class RekamMedisResource extends Resource
                         }
 
                         // 2. Ambil data dari pilihan laboratorium terstruktur
-                        $labItems = $get('lab_layanan_ids') ?? [];
+                        $labItems = call_user_func($get, 'lab_layanan_ids') ?? [];
                         foreach ($labItems as $labId) {
-                            $tindakanLab = \App\Models\Tindakan::find($labId);
+                            $tindakanLab = Tindakan::find($labId, ['*']);
                             if ($tindakanLab) {
                                 $syncData[$labId] = [
                                     'jumlah' => 1,
@@ -276,7 +283,7 @@ class RekamMedisResource extends Resource
                             }
                         }
 
-                        $record->tindakans()->sync($syncData);
+                        $record->tindakan()->sync($syncData);
                     })
                     ->dehydrated(false)
                     ->columns(2)
@@ -286,7 +293,7 @@ class RekamMedisResource extends Resource
             Section::make('5. Permintaan Laboratorium & Terapi')->schema([
                 Select::make('lab_layanan_ids')
                     ->label('Pilih Pemeriksaan Laboratorium (Pemeriksaan Penunjang)')
-                    ->options(\App\Models\Tindakan::where('kategori', 'Penunjang')->where('is_active', true)->pluck('nama_tindakan', 'id'))
+                    ->options(Tindakan::where('kategori', '=', 'Penunjang')->where('is_active', '=', true)->pluck('nama_tindakan', 'id'))
                     ->multiple()
                     ->searchable()
                     ->preload()
@@ -294,7 +301,7 @@ class RekamMedisResource extends Resource
                     ->dehydrated(false)
                     ->afterStateHydrated(function ($set, $record) {
                         if ($record) {
-                            $set('lab_layanan_ids', $record->tindakans()->where('kategori', 'Penunjang')->pluck('tindakan_id')->toArray());
+                            $set('lab_layanan_ids', $record->tindakan()->where('kategori', '=', 'Penunjang')->pluck('tindakan_id')->toArray());
                         }
                     }),
                 
@@ -319,7 +326,7 @@ class RekamMedisResource extends Resource
                                     ->required()
                                     ->live()
                                     ->afterStateUpdated(function ($state, callable $set) {
-                                        $obat = \App\Models\Obat::find($state);
+                                        $obat = Obat::find($state, ['*']);
                                         $set('satuan_view', $obat?->satuan);
                                         $set('stok_info', $obat ? "Stok: {$obat->stok}" : null);
                                     }),
@@ -330,7 +337,7 @@ class RekamMedisResource extends Resource
                                     ->afterStateHydrated(function ($set, $get) {
                                         $obatId = $get('obat_id');
                                         if ($obatId) {
-                                            $obat = \App\Models\Obat::find($obatId);
+                                            $obat = Obat::find($obatId, ['*']);
                                             $set('satuan_view', $obat?->satuan);
                                         }
                                     }),
@@ -341,7 +348,7 @@ class RekamMedisResource extends Resource
                                     ->placeholder(function (callable $get) {
                                         $obatId = $get('obat_id');
                                         if ($obatId) {
-                                            $obat = \App\Models\Obat::find($obatId);
+                                            $obat = Obat::find($obatId, ['*']);
                                             return $obat ? "Stok: {$obat->stok}" : null;
                                         }
                                         return 'Pilih obat dulu';
@@ -349,7 +356,7 @@ class RekamMedisResource extends Resource
                                     ->helperText(function (callable $get) {
                                         $obatId = $get('obat_id');
                                         if ($obatId) {
-                                            $obat = \App\Models\Obat::find($obatId);
+                                            $obat = Obat::find($obatId, ['*']);
                                             if ($obat && $obat->stok < 10) {
                                                 return "⚠️ Stok menipis! ({$obat->stok})";
                                             }

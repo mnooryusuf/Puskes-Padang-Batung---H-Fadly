@@ -56,7 +56,7 @@ class RiwayatBerobatWidget extends BaseWidget
                     ->state(fn ($record) => $record->rekamMedis?->penyakit?->nama_penyakit ?? $record->rekamMedis?->diagnosa)
                     ->limit(40)
                     ->placeholder('Belum diperiksa'),
-                Tables\Columns\TextColumn::make('rekamMedis.tindakans.nama_tindakan')
+                Tables\Columns\TextColumn::make('rekamMedis.tindakan.nama_tindakan')
                     ->label('Tindakan')
                     ->listWithLineBreaks()
                     ->bulleted()

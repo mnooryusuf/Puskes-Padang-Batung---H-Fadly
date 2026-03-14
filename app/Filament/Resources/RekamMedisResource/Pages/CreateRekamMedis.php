@@ -46,15 +46,15 @@ class CreateRekamMedis extends CreateRecord
                     ->rows(4),
             ])
             ->mountUsing(function ($form, array $arguments) {
-                $record = RekamMedis::with(['penyakit', 'tindakans', 'resep.detailReseps.obat'])->find($arguments['recordId'] ?? null);
+                $record = RekamMedis::with(['penyakit', 'tindakan', 'resep.detailReseps.obat'])->find($arguments['recordId'] ?? null);
                 if (!$record) return;
 
                 $diagnosisName = $record->nama_penyakit ?? $record->penyakit?->nama_penyakit;
 
                 // Format tindakan (hanya dari pivot)
                 $tindakanText = 'Tidak ada tindakan.';
-                if ($record->tindakans->isNotEmpty()) {
-                    $tindakanText = $record->tindakans->map(fn($t) => "• {$t->nama_tindakan} (" . ($t->pivot->jumlah ?? 1) . "x)")->implode("\n");
+                if ($record->tindakan->isNotEmpty()) {
+                    $tindakanText = $record->tindakan->map(fn($t) => "• {$t->nama_tindakan} (" . ($t->pivot->jumlah ?? 1) . "x)")->implode("\n");
                 }
 
                 $form->fill([
@@ -140,7 +140,7 @@ class CreateRekamMedis extends CreateRecord
         $pendaftaranId = request()->query('pendaftaran_id');
 
         if ($pendaftaranId) {
-            $pendaftaran = Pendaftaran::find($pendaftaranId);
+            $pendaftaran = Pendaftaran::find($pendaftaranId, ['*']);
             if ($pendaftaran) {
                 $user = auth()->user();
                 $dokterId = $user?->dokter?->id;

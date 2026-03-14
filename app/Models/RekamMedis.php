@@ -60,7 +60,7 @@ class RekamMedis extends Model
         return $this->pendaftaran->pasien();
     }
 
-    public function tindakans(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function tindakan(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Tindakan::class, 'rekam_medis_tindakan')
                     ->withPivot('jumlah', 'harga_snapshot')

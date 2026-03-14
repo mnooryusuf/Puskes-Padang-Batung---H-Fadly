@@ -152,13 +152,13 @@ class ReportController extends Controller
         $poliId = $request->input('poli_id');
 
         $data = DB::table('rekam_medis_tindakan')
-            ->join('tindakans', 'rekam_medis_tindakan.tindakan_id', '=', 'tindakans.id')
+            ->join('tindakan', 'rekam_medis_tindakan.tindakan_id', '=', 'tindakan.id')
             ->join('rekam_medis', 'rekam_medis_tindakan.rekam_medis_id', '=', 'rekam_medis.id')
             ->join('pendaftaran', 'rekam_medis.pendaftaran_id', '=', 'pendaftaran.id')
-            ->select('tindakans.nama_tindakan', DB::raw('count(*) as total'))
+            ->select('tindakan.nama_tindakan', DB::raw('count(*) as total'))
             ->whereBetween('rekam_medis.created_at', [$start, $end])
             ->when($poliId, fn($q) => $q->where('pendaftaran.poli_id', $poliId))
-            ->groupBy('tindakans.id', 'tindakans.nama_tindakan')
+            ->groupBy('tindakan.id', 'tindakan.nama_tindakan')
             ->orderBy('total', 'desc')
             ->get();
 

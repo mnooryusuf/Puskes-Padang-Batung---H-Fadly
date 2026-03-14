@@ -85,9 +85,9 @@
         <div class="p-4 border border-purple-100 dark:border-purple-900/30 rounded-xl">
             <h4 class="text-sm font-bold text-purple-700 dark:text-purple-400 mb-3">Tindakan Medis</h4>
             <div class="text-sm">
-                @if($record->tindakans->count() > 0)
+                @if($record->tindakan->count() > 0)
                     <ul class="list-disc list-inside space-y-1 text-gray-900 dark:text-white">
-                        @foreach($record->tindakans as $t)
+                        @foreach($record->tindakan as $t)
                             <li>{{ $t->nama_tindakan }}</li>
                         @endforeach
                     </ul>

@@ -151,7 +151,7 @@ class PembayaranResource extends Resource
         $pendaftaran = \App\Models\Pendaftaran::with([
             'poli', 
             'rekamMedis.resep.detailReseps.obat',
-            'rekamMedis.tindakans'
+            'rekamMedis.tindakan'
         ])->find($state);
 
         if (!$pendaftaran) return;
@@ -178,8 +178,8 @@ class PembayaranResource extends Resource
         $biayaBhp = 0;
         $biayaTambahan = 0;
 
-        if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->tindakans) {
-            foreach ($pendaftaran->rekamMedis->tindakans as $tindakan) {
+        if ($pendaftaran->rekamMedis && $pendaftaran->rekamMedis->tindakan) {
+            foreach ($pendaftaran->rekamMedis->tindakan as $tindakan) {
                 $subtotal = ($tindakan->pivot->harga_snapshot ?? $tindakan->harga) * ($tindakan->pivot->jumlah ?? 1);
                 
                 switch ($tindakan->kategori) {

@@ -270,7 +270,7 @@ class DatabaseSeeder extends Seeder
         // =============================================
         // X. TINDAKAN MEDIS & PENUNJANG (NEW)
         // =============================================
-        $tindakans = [
+        $tindakan = [
             ['nama_tindakan' => 'Jahit Luka Kecil (1-3 Jahitan)', 'kategori' => 'Tindakan', 'harga' => 50000, 'is_active' => true],
             ['nama_tindakan' => 'Jahit Luka Besar (>3 Jahitan)', 'kategori' => 'Tindakan', 'harga' => 100000, 'is_active' => true],
             ['nama_tindakan' => 'Cabut Gigi Anak', 'kategori' => 'Tindakan', 'harga' => 50000, 'is_active' => true],
@@ -283,7 +283,7 @@ class DatabaseSeeder extends Seeder
             ['nama_tindakan' => 'Kassa Steril + Verban', 'kategori' => 'BHP', 'harga' => 15000, 'is_active' => true],
         ];
 
-        foreach ($tindakans as $t) {
+        foreach ($tindakan as $t) {
             \App\Models\Tindakan::create($t);
         }
 

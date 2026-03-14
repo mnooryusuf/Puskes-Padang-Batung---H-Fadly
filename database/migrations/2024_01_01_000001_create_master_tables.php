@@ -40,7 +40,7 @@ return new class extends Migration
         });
 
         // Tabel Tindakan
-        Schema::create('tindakans', function (Blueprint $table) {
+        Schema::create('tindakan', function (Blueprint $table) {
             $table->id();
             $table->string('nama_tindakan');
             $table->string('kategori'); // Tindakan, Penunjang, BHP
@@ -52,7 +52,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('tindakans');
+        Schema::dropIfExists('tindakan');
         Schema::dropIfExists('obat');
         Schema::dropIfExists('penyakit');
         Schema::dropIfExists('poli');
