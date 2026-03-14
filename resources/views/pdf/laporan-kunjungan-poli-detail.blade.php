@@ -23,7 +23,7 @@
         <h2 style="margin-bottom: 5px;">LAPORAN KUNJUNGAN PASIEN</h2>
         <h3 style="margin-top: 0; margin-bottom: 5px;">UNTT LAYANAN: {{ strtoupper($namaPoli) }}</h3>
         <div>PUSKESMAS PADANG BATUNG</div>
-        <div style="margin-top: 5px;">Periode: {{ Carbon\Carbon::parse($start)->format('d/m/Y') }} s/d {{ Carbon\Carbon::parse($end)->format('d/m/Y') }}</div>
+        <div style="margin-top: 5px;">Periode: {{ Carbon\Carbon::parse($start)->translatedFormat('d F Y') }} s/d {{ Carbon\Carbon::parse($end)->translatedFormat('d F Y') }}</div>
     </div>
 
     <table>
@@ -43,7 +43,7 @@
             @foreach($kunjungans as $index => $item)
             <tr>
                 <td>{{ $index + 1 }}</td>
-                <td>{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d/m/Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($item->tanggal_daftar)->translatedFormat('d F Y') }}</td>
                 <td>{{ $item->no_antrian }}</td>
                 <td>{{ $item->pasien->no_rm }}</td>
                 <td class="text-left font-bold">{{ $item->pasien->nama_pasien }}</td>
@@ -66,7 +66,7 @@
 
     <div style="margin-top: 50px;">
         <div style="float: right; width: 250px; text-align: center;">
-            <p>Padang Batung, {{ now()->format('d F Y') }}</p>
+            <p>Padang Batung, {{ now()->translatedFormat('d F Y') }}</p>
             <p>Dokter Pemeriksa,</p>
             <br><br><br><br>
             <p class="text-bold">( {{ auth()->user()->nama_lengkap }} )</p>

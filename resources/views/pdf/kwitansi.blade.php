@@ -23,7 +23,7 @@
         <table style="width: 100%">
             <tr>
                 <td><strong>No. Transaksi:</strong> {{ $pembayaran->id }}</td>
-                <td style="text-align: right"><strong>Tanggal:</strong> {{ $pembayaran->created_at->format('d-m-Y H:i') }}</td>
+                <td style="text-align: right"><strong>Tanggal:</strong> {{ $pembayaran->created_at->translatedFormat('d/m/Y H:i') }}</td>
             </tr>
             <tr>
                 <td><strong>Nama Pasien:</strong> {{ $pembayaran->pendaftaran->pasien->nama_pasien }}</td>

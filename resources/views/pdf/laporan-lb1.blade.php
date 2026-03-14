@@ -15,7 +15,7 @@
     <div class="header">
         <h2>Laporan 10 Besar Penyakit (LB1)</h2>
         <div>PUSKESMAS PADANG BATUNG</div>
-        <div>Periode: {{ Carbon\Carbon::parse($start)->format('d/m/Y') }} s/d {{ Carbon\Carbon::parse($end)->format('d/m/Y') }}</div>
+        <div>Periode: {{ Carbon\Carbon::parse($start)->translatedFormat('d F Y') }} s/d {{ Carbon\Carbon::parse($end)->translatedFormat('d F Y') }}</div>
     </div>
 
     <table>
@@ -46,7 +46,7 @@
 
     <div style="margin-top: 50px;">
         <div style="float: right; width: 250px; text-align: center;">
-            <p>Padang Batung, {{ now()->format('d F Y') }}</p>
+            <p>Padang Batung, {{ now()->translatedFormat('d F Y') }}</p>
             <p>Kepala Puskesmas</p>
             <br><br><br><br>
             <p>( _______________________ )</p>

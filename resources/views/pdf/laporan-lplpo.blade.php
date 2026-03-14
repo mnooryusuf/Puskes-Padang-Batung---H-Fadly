@@ -52,7 +52,7 @@
 
     <div class="footer">
         <div class="signature">
-            <p>Padang Batung, {{ now()->format('d F Y') }}</p>
+            <p>Padang Batung, {{ now()->translatedFormat('d F Y') }}</p>
             <p>Kepala Farmasi / Apoteker</p>
             <br><br><br>
             <p>( _______________________ )</p>

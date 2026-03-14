@@ -16,7 +16,7 @@
     <div class="header">
         <h2>Laporan Obat Kadaluwarsa (Next 3 Months)</h2>
         <div>PUSKESMAS PADANG BATUNG</div>
-        <div>Dicetak pada: {{ now()->format('d/m/Y H:i') }}</div>
+        <div>Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }}</div>
     </div>
 
     <table>
@@ -38,7 +38,7 @@
                 <td>{{ $index + 1 }}</td>
                 <td class="text-left">{{ $item->nama_obat }}</td>
                 <td>{{ $item->sediaan }}</td>
-                <td>{{ Carbon\Carbon::parse($item->expired_at)->format('d/m/Y') }}</td>
+                <td>{{ Carbon\Carbon::parse($item->expired_at)->translatedFormat('d F Y') }}</td>
                 <td class="{{ $days < 0 ? 'warning' : '' }}">
                     {{ $days < 0 ? 'EXPIRED' : ($days == 0 ? 'HARI INI' : $days . ' Hari Lagi') }}
                 </td>
@@ -54,7 +54,7 @@
 
     <div style="margin-top: 50px;">
         <div style="float: right; width: 250px; text-align: center;">
-            <p>Padang Batung, {{ now()->format('d F Y') }}</p>
+            <p>Padang Batung, {{ now()->translatedFormat('d F Y') }}</p>
             <p>Kepala Puskesmas</p>
             <br><br><br><br>
             <p>( _______________________ )</p>
