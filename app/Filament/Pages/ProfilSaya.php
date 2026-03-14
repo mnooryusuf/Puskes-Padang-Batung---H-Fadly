@@ -22,12 +22,12 @@ class ProfilSaya extends Page implements HasForms
     protected static ?string $navigationIcon = 'heroicon-o-user-circle';
     protected static ?string $navigationLabel = 'Profil Saya';
     protected static ?string $title = 'Profil Saya';
-    protected static ?string $navigationGroup = 'Layanan Pasien';
-    protected static ?int $navigationSort = 10;
+    protected static ?string $navigationGroup = 'Pengaturan';
+    protected static ?int $navigationSort = 100;
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('pasien');
+        return auth()->check();
     }
 
     protected static string $view = 'filament.pages.profil-saya';
@@ -58,6 +58,9 @@ class ProfilSaya extends Page implements HasForms
 
     public function form(Form $form): Form
     {
+        $user = auth()->user();
+        $isPasien = $user->hasRole('pasien');
+
         return $form
             ->schema([
                 Section::make('Informasi Akun')
@@ -66,9 +69,13 @@ class ProfilSaya extends Page implements HasForms
                         TextInput::make('username')
                             ->required()
                             ->unique(User::class, 'username', ignorable: auth()->user()),
+                        TextInput::make('nama_lengkap')
+                            ->label('Nama Lengkap')
+                            ->required(),
                         TextInput::make('password')
                             ->password()
                             ->revealable()
+                            ->placeholder('Kosongkan jika tidak ingin mengubah')
                             ->dehydrated(fn ($state) => filled($state))
                             ->rule(Password::default()),
                     ])->columns(2),
@@ -76,9 +83,6 @@ class ProfilSaya extends Page implements HasForms
                 Section::make('Data Pribadi')
                     ->description('Informasi dasar yang terdaftar di sistem (Hanya Baca)')
                     ->schema([
-                        TextInput::make('nama_lengkap')
-                            ->label('Nama Lengkap')
-                            ->disabled(),
                         TextInput::make('no_rm')
                             ->label('Nomor Rekam Medis')
                             ->disabled(),
@@ -94,7 +98,9 @@ class ProfilSaya extends Page implements HasForms
                         TextInput::make('jenis_kelamin')
                             ->label('Jenis Kelamin')
                             ->disabled(),
-                    ])->columns(3),
+                    ])
+                    ->visible($isPasien)
+                    ->columns(3),
 
                 Section::make('Kontak & Alamat')
                     ->description('Pastikan data ini selalu terbaru untuk memudahkan komunikasi')
@@ -116,7 +122,9 @@ class ProfilSaya extends Page implements HasForms
                         TextInput::make('rw')
                             ->label('RW')
                             ->maxLength(3),
-                    ])->columns(2),
+                    ])
+                    ->visible($isPasien)
+                    ->columns(2),
             ])
             ->statePath('data');
     }
@@ -126,22 +134,23 @@ class ProfilSaya extends Page implements HasForms
         $data = $this->form->getState();
 
         $user = auth()->user();
-        $pasien = $user->pasien;
+        $isPasien = $user->hasRole('pasien');
 
         // Update User
         $userData = [
             'username' => $data['username'],
+            'nama_lengkap' => $data['nama_lengkap'],
         ];
 
-        if (isset($data['password'])) {
+        if (filled($data['password'])) {
             $userData['password'] = Hash::make($data['password']);
         }
 
         $user->update($userData);
 
-        // Update Pasien
-        if ($pasien) {
-            $pasien->update([
+        // Update Pasien relation if applicable
+        if ($isPasien && $user->pasien) {
+            $user->pasien->update([
                 'no_hp' => $data['no_hp'],
                 'no_bpjs' => $data['no_bpjs'],
                 'alamat' => $data['alamat'],
