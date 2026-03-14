@@ -26,8 +26,8 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->brandLogo(asset('images/logo.svg'))
-            ->brandLogoHeight('6rem')
+            ->brandLogo(fn () => view('filament.components.logo'))
+            ->brandLogoHeight('3rem')
             ->id('admin')
             ->path('dashboard')
             ->login(Login::class)
