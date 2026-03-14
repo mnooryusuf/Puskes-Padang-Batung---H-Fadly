@@ -16,6 +16,9 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Disable events to prevent observers from interfering with seeding
+        \Illuminate\Database\Eloquent\Model::unsetEventDispatcher();
+
         // =============================================
         // 1. USERS
         // =============================================
@@ -314,14 +317,82 @@ class DatabaseSeeder extends Seeder
             Penyakit::create($p);
         }
 
+        // =============================================
+        // 8. TRANSACTIONS (Pendaftaran, Rekam Medis, etc.)
+        // =============================================
+        $pasiens = Pasien::all();
+        $dokters = Dokter::all();
+        $penyakitItems = Penyakit::all();
+        $obatItems = Obat::all();
+
+        // Let's create some history for the last 30 days
+        for ($i = 0; $i < 40; $i++) {
+            $date = now()->subDays(rand(0, 30));
+            $p = $pasiens->random();
+            $d = $dokters->random();
+            
+            $pendaftaran = \App\Models\Pendaftaran::create([
+                'pasien_id' => $p->id,
+                'poli_id' => $d->poli_id,
+                'no_antrian' => $i + 1,
+                'tanggal_daftar' => $date,
+                'jenis_pembayaran' => $p->cara_bayar,
+                'status' => 'Selesai',
+                'created_at' => $date,
+            ]);
+
+            $rekamMedis = \App\Models\RekamMedis::create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'dokter_id' => $d->id,
+                'penyakit_id' => $penyakitItems->random()->id,
+                'keluhan_utama' => 'Keluhan pasien pada tanggal ' . $date->format('d/m/Y'),
+                'riwayat_penyakit_sekarang' => 'Kondisi kesehatan umum saat diperiksa.',
+                'riwayat_alergi' => 'Tidak Ada',
+                'berat_badan' => rand(45, 80),
+                'tekanan_darah' => rand(110, 140) . '/' . rand(70, 90),
+                'suhu_tubuh' => rand(36, 38),
+                'nadi' => rand(70, 90),
+                'respirasi' => rand(16, 22),
+                'status_pulang' => 'Sembuh',
+                'tipe_diagnosis' => 'Primer',
+                'created_at' => $date,
+            ]);
+
+            $resep = \App\Models\Resep::create([
+                'rekam_medis_id' => $rekamMedis->id,
+                'status_pengambilan' => 'Sudah Diserahkan',
+                'created_at' => $date,
+            ]);
+
+            for ($j = 0; $j < rand(1, 3); $j++) {
+                $obat = $obatItems->random();
+                \App\Models\DetailResep::create([
+                    'resep_id' => $resep->id,
+                    'obat_id' => $obat->id,
+                    'dosis' => '3 x 1 Tablet sesudah makan',
+                    'jumlah' => rand(5, 15),
+                    'jumlah_diserahkan' => rand(5, 15),
+                    'created_at' => $date,
+                ]);
+            }
+
+            \App\Models\Pembayaran::create([
+                'pendaftaran_id' => $pendaftaran->id,
+                'total_bayar' => $pendaftaran->poli->biaya_registrasi + $pendaftaran->poli->biaya_konsultasi + rand(5000, 20000),
+                'status_pembayaran' => 'Lunas',
+                'created_at' => $date,
+            ]);
+        }
+
         echo "✅ Seeder selesai!\n";
-        echo "   - User: " . User::count() . " akun\n";
-        echo "   - Poli: " . Poli::count() . "\n";
-        echo "   - Dokter: " . Dokter::count() . "\n";
-        echo "   - Jadwal: " . JadwalDokter::count() . "\n";
-        echo "   - Pasien: " . Pasien::count() . "\n";
-        echo "   - Obat: " . Obat::count() . "\n";
-        echo "   - Tindakan: " . \App\Models\Tindakan::count() . "\n";
-        echo "   - Penyakit: " . Penyakit::count() . "\n";
+        echo "   - User: " . User::count('*') . " akun\n";
+        echo "   - Poli: " . Poli::count('*') . "\n";
+        echo "   - Dokter: " . Dokter::count('*') . "\n";
+        echo "   - Jadwal: " . JadwalDokter::count('*') . "\n";
+        echo "   - Pasien: " . Pasien::count('*') . "\n";
+        echo "   - Obat: " . Obat::count('*') . "\n";
+        echo "   - Tindakan: " . \App\Models\Tindakan::count('*') . "\n";
+        echo "   - Penyakit: " . Penyakit::count('*') . "\n";
+        echo "   - Trx Pendaftaran: " . \App\Models\Pendaftaran::count('*') . "\n";
     }
 }

@@ -33,14 +33,26 @@ return new class extends Migration
             $table->string('kemasan')->nullable();
             $table->string('satuan');
             $table->integer('stok')->default(0);
+            $table->integer('stok_minimum')->default(10);
             $table->date('expired_at')->nullable();
             $table->decimal('harga_jual', 12, 2)->default(0);
+            $table->timestamps();
+        });
+
+        // Tabel Tindakan
+        Schema::create('tindakans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_tindakan');
+            $table->string('kategori'); // Tindakan, Penunjang, BHP
+            $table->decimal('harga', 12, 2)->default(0);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('tindakans');
         Schema::dropIfExists('obat');
         Schema::dropIfExists('penyakit');
         Schema::dropIfExists('poli');

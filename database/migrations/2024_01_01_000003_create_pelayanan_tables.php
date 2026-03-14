@@ -52,17 +52,28 @@ return new class extends Migration
             $table->enum('tipe_diagnosis', ['Primer', 'Sekunder'])->default('Primer');
             $table->text('keluhan')->nullable();
             $table->text('diagnosa')->nullable();
-            $table->text('tindakan');
+            $table->text('tindakan')->nullable();
             $table->text('instruksi_lab')->nullable();
             $table->string('status_pulang')->nullable();
             $table->string('rs_tujuan')->nullable();
             $table->text('alasan_rujuk')->nullable();
             $table->timestamps();
         });
+
+        // Tabel Rekam Medis Tindakan
+        Schema::create('rekam_medis_tindakan', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('rekam_medis_id')->constrained('rekam_medis')->cascadeOnDelete();
+            $table->foreignId('tindakan_id')->constrained('tindakans')->cascadeOnDelete();
+            $table->integer('jumlah')->default(1);
+            $table->decimal('harga_snapshot', 12, 2)->default(0);
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
+        Schema::dropIfExists('rekam_medis_tindakan');
         Schema::dropIfExists('rekam_medis');
         Schema::dropIfExists('antrian');
         Schema::dropIfExists('pendaftaran');

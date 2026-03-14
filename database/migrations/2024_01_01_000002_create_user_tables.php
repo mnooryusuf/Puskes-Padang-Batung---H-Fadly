@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('rt')->nullable();
             $table->string('rw')->nullable();
             $table->string('no_hp');
+            $table->string('status_hidup')->default('Hidup');
             $table->timestamps();
         });
 
