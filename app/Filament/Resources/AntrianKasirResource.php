@@ -23,7 +23,7 @@ class AntrianKasirResource extends Resource
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return $user?->hasRole('admin') || $user?->hasRole('kasir');
+        return $user?->hasRole('admin') || $user?->hasRole('kasir') || $user?->hasRole('kepala');
     }
     protected static ?string $slug = 'antrian-kasir';
 
@@ -67,6 +67,7 @@ class AntrianKasirResource extends Resource
                     ->label('Panggil')
                     ->icon('heroicon-o-megaphone')
                     ->color('warning')
+                    ->visible(fn() => !auth()->user()->hasRole('kepala'))
                     ->extraAttributes(fn (Antrian $record): array => [
                         'onclick' => new \Illuminate\Support\HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . addslashes($record->nomor_antrian) . ", silakan menuju ke Kasir'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                     ]),
@@ -77,7 +78,7 @@ class AntrianKasirResource extends Resource
                     ->url(fn (Antrian $record): string => PembayaranResource::getUrl('create', [
                         'pendaftaran_id' => $record->pendaftaran_id,
                     ]))
-                    ->visible(fn (Antrian $record): bool => !$record->pendaftaran->pembayaran),
+                    ->visible(fn (Antrian $record): bool => !auth()->user()->hasRole('kepala') && !$record->pendaftaran->pembayaran),
                 Action::make('selesaikan')
                     ->label('Selesaikan')
                     ->icon('heroicon-o-check-circle')
@@ -89,7 +90,7 @@ class AntrianKasirResource extends Resource
                         $record->update(['status' => 'Selesai']);
                         $record->pendaftaran->update(['status' => 'Selesai']);
                     })
-                    ->visible(fn (Antrian $record): bool => $record->pendaftaran->pembayaran !== null),
+                    ->visible(fn (Antrian $record): bool => !auth()->user()->hasRole('kepala') && $record->pendaftaran->pembayaran !== null),
             ])
             ->poll('10s');
     }

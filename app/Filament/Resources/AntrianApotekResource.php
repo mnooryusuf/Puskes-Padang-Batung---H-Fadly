@@ -33,7 +33,7 @@ class AntrianApotekResource extends Resource
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return $user?->hasRole('admin') || $user?->hasRole('apoteker');
+        return $user?->hasRole('admin') || $user?->hasRole('apoteker') || $user?->hasRole('kepala');
     }
     protected static ?string $slug = 'antrian-apotek';
 
@@ -87,6 +87,7 @@ class AntrianApotekResource extends Resource
                     ->label('Panggil')
                     ->icon('heroicon-o-megaphone')
                     ->color('info')
+                    ->visible(fn() => !auth()->user()->hasRole('kepala'))
                     ->extraAttributes(fn (Antrian $record): array => [
                         'onclick' => new HtmlString("window.speechSynthesis.cancel(); setTimeout(function(){ var msg = new SpeechSynthesisUtterance('Nomor antrian " . $record->nomor_antrian . ", silakan menuju ke Apotek'); msg.lang = 'id-ID'; msg.rate = 0.9; window.speechSynthesis.speak(msg); }, 100);")
                     ]),
@@ -261,7 +262,7 @@ class AntrianApotekResource extends Resource
                     ->icon('heroicon-o-check-circle')
                     ->color('info')
                     ->action(fn (Antrian $record) => $record->pendaftaran->rekamMedis->resep->update(['status_pengambilan' => 'Siap Diambil']))
-                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Diproses'),
+                    ->visible(fn (Antrian $record) => !auth()->user()->hasRole('kepala') && $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Diproses'),
 
                 // 6. Serahkan Obat (menggunakan jumlah_diserahkan & obat_pengganti)
                 Action::make('serahkan_obat')
@@ -313,7 +314,7 @@ class AntrianApotekResource extends Resource
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (Antrian $record) => $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Siap Diambil'),
+                    ->visible(fn (Antrian $record) => !auth()->user()->hasRole('kepala') && $record->pendaftaran->rekamMedis?->resep?->status_pengambilan === 'Siap Diambil'),
 
                 // 7. Tolak Resep (Fitur 4)
                 Action::make('tolak_resep')

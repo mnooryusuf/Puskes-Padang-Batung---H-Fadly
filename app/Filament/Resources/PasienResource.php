@@ -26,6 +26,7 @@ class PasienResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-identification';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Pasien';
+    protected static ?int $navigationSort = 15;
 
     public static function canAccess(): bool
     {
@@ -34,17 +35,17 @@ class PasienResource extends Resource
 
     public static function canCreate(): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
 
     public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
 
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
 
     protected static ?string $pluralModelLabel = 'Pasien';
@@ -176,7 +177,7 @@ class PasienResource extends Resource
             DeleteAction::make(),
         ])->groupedBulkActions([
             DeleteBulkAction::make()
-                ->visible(fn () => !auth()->user()->hasRole('apoteker')),
+                ->visible(fn () => !auth()->user()->hasRole('apoteker') && !auth()->user()->hasRole('kepala')),
         ]);
     }
 

@@ -21,11 +21,28 @@ class JadwalDokterResource extends Resource
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Jadwal Dokter';
 
+    protected static ?int $navigationSort = 7;
+
     public static function canAccess(): bool
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return $user?->hasRole('admin') || $user?->hasRole('petugas');
+        return $user?->hasRole('admin') || $user?->hasRole('petugas') || $user?->hasRole('kepala');
+    }
+
+    public static function canCreate(): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
     }
 
     protected static ?string $pluralModelLabel = 'Jadwal Dokter';

@@ -19,27 +19,28 @@ class PenyakitResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-bug-ant';
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Penyakit (ICD-10)';
+    protected static ?int $navigationSort = 16;
 
     public static function canAccess(): bool
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return $user?->hasRole('admin');
+        return $user?->hasRole('admin') || $user?->hasRole('kepala');
     }
 
     public static function canCreate(): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
 
     public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
 
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
-        return !auth()->user()?->hasRole('apoteker');
+        return !auth()->user()?->hasRole('apoteker') && !auth()->user()?->hasRole('kepala');
     }
     protected static ?string $pluralModelLabel = 'Penyakit (ICD-10)';
 

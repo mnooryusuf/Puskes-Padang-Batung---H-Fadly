@@ -20,12 +20,13 @@ class Laporan extends Page implements HasForms, HasActions
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationGroup = 'Laporan';
     protected static ?string $navigationLabel = 'Pusat Laporan';
+    protected static ?int $navigationSort = 1;
     protected static ?string $title = 'Pusat Laporan';
     protected static string $view = 'filament.pages.laporan';
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('kepala_puskesmas') || auth()->user()->hasRole('petugas') || auth()->user()->hasRole('apoteker') || auth()->user()->hasRole('kasir');
+        return auth()->user()->hasRole('admin') || auth()->user()->hasRole('kepala') || auth()->user()->hasRole('petugas') || auth()->user()->hasRole('apoteker') || auth()->user()->hasRole('kasir');
     }
 
     protected function getHeaderActions(): array

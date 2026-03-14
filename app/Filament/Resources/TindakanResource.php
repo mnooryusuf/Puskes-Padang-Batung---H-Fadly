@@ -21,9 +21,26 @@ class TindakanResource extends Resource
     protected static ?string $navigationGroup = 'Data Master';
     protected static ?string $modelLabel = 'Tindakan & Penunjang';
 
+    protected static ?int $navigationSort = 14;
+
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin');
+        return auth()->user()?->hasRole('admin') || auth()->user()?->hasRole('kepala');
+    }
+
+    public static function canCreate(): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return !auth()->user()?->hasRole('kepala');
     }
 
     protected static ?string $pluralModelLabel = 'Tindakan & Penunjang';

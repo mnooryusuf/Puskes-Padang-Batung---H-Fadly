@@ -33,7 +33,28 @@ class RekamMedisResource extends Resource
     {
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
-        return $user?->hasRole('admin') || $user?->hasRole('dokter') || $user?->hasRole('apoteker');
+        return $user?->hasRole('admin') || $user?->hasRole('dokter') || $user?->hasRole('apoteker') || $user?->hasRole('kepala');
+    }
+
+    public static function canCreate(): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return !$user?->hasRole('kepala') && !$user?->hasRole('apoteker');
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return !$user?->hasRole('kepala') && !$user?->hasRole('apoteker');
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        return !$user?->hasRole('kepala') && !$user?->hasRole('apoteker');
     }
     protected static ?string $pluralModelLabel = 'Rekam Medis';
 

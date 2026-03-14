@@ -139,6 +139,29 @@ class StatsOverview extends BaseWidget
             ];
         }
 
+        // Role Kepala (Trend Bulanan) Stats
+        if ($user->hasRole('kepala')) {
+            return [
+                Stat::make('Total Kunjungan (Bulan Ini)', Pendaftaran::whereBetween('tanggal_daftar', [$startDate, $endDate])->count())
+                    ->description('Total pasien dilayani dlm periode')
+                    ->descriptionIcon('heroicon-m-user-group', IconPosition::Before)
+                    ->color('info'),
+                Stat::make('Total Pendapatan (Bulan Ini)', 'Rp ' . Number::format(
+                    Pembayaran::where('status_pembayaran', 'Lunas')
+                        ->whereBetween('created_at', [$startDate, $endDate])
+                        ->sum('total_bayar'), 
+                    locale: 'id'
+                ))
+                    ->description('Total pendapatan dlm periode')
+                    ->descriptionIcon('heroicon-m-banknotes', IconPosition::Before)
+                    ->color('success'),
+                Stat::make('Obat Stok Menipis', \App\Models\Obat::where('stok', '<', 10)->count())
+                    ->description('Jumlah item butuh restock')
+                    ->descriptionIcon('heroicon-m-beaker', IconPosition::Before)
+                    ->color('danger'),
+            ];
+        }
+
         // Admin/Default Stats
         return [
             Stat::make('Pasien Baru', Pasien::whereBetween('created_at', [$startDate, $endDate])->count())
