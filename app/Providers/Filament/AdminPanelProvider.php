@@ -32,9 +32,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('dashboard')
             ->login(Login::class)
             ->colors([
-                'primary' => '#00796B',
-                'warning' => '#FF9800',
+                'primary' => Color::Teal,
+                'gray' => Color::Slate,
             ])
+            ->font('Inter')
+            ->renderHook(
+                'panels::body.end',
+                fn () => view('filament.components.premium-theme'),
+            )
             ->navigationGroups([
                 'Layanan Pasien',
                 'Pelayanan',
