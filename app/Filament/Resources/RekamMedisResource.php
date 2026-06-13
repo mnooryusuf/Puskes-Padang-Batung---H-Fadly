@@ -122,8 +122,9 @@ class RekamMedisResource extends Resource
                                 
                                 // Gabungkan daftar tindakan pivot
                                 $tindakanList = "";
-                                if ($item->tindakan->isNotEmpty()) {
-                                    $tindakanList = collect($item->tindakan)->map(fn($t) => "• {$t->nama_tindakan} ({$t->pivot->jumlah}x)")->implode('<br>');
+                                $tindakanCollection = collect($item->relationLoaded('tindakan') ? $item->getRelation('tindakan') : []);
+                                if ($tindakanCollection->isNotEmpty()) {
+                                    $tindakanList = $tindakanCollection->map(fn($t) => "• {$t->nama_tindakan} ({$t->pivot->jumlah}x)")->implode('<br>');
                                 }
                                 
                                 // Gabungkan daftar obat resep
