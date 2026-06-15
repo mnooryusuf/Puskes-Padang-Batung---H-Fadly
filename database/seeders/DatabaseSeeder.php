@@ -364,21 +364,27 @@ class DatabaseSeeder extends Seeder
                 'created_at' => $date,
             ]);
 
+            $biayaObat = 0;
             for ($j = 0; $j < rand(1, 3); $j++) {
                 $obat = $obatItems->random();
+                $jumlah = rand(5, 15);
                 \App\Models\DetailResep::create([
                     'resep_id' => $resep->id,
                     'obat_id' => $obat->id,
                     'dosis' => '3 x 1 Tablet sesudah makan',
-                    'jumlah' => rand(5, 15),
-                    'jumlah_diserahkan' => rand(5, 15),
+                    'jumlah' => $jumlah,
+                    'jumlah_diserahkan' => $jumlah,
                     'created_at' => $date,
                 ]);
+                $biayaObat += ($obat->harga_jual ?? 0) * $jumlah;
             }
 
             \App\Models\Pembayaran::create([
                 'pendaftaran_id' => $pendaftaran->id,
-                'total_bayar' => $pendaftaran->poli->biaya_registrasi + $pendaftaran->poli->biaya_konsultasi + rand(5000, 20000),
+                'biaya_pendaftaran' => $pendaftaran->poli->biaya_registrasi ?? 0,
+                'biaya_konsultasi' => $pendaftaran->poli->biaya_konsultasi ?? 0,
+                'biaya_obat' => $biayaObat,
+                'total_bayar' => ($pendaftaran->poli->biaya_registrasi ?? 0) + ($pendaftaran->poli->biaya_konsultasi ?? 0) + $biayaObat,
                 'status_pembayaran' => 'Lunas',
                 'created_at' => $date,
             ]);
